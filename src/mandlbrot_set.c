@@ -1,3 +1,26 @@
+/**
+ * Copyright (c) 2020 Eros Fabrici - eros.fabrici@gmail.com
+
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+*/
+
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -10,7 +33,6 @@
 #define RESULT 1
 #define TERMINATE 2
 #define MASTER 0
-//constant for 
 #define LOAD_BALANCE_TIME true
 
 int N_x, N_y, I_max, job_width, job_size, *image, *result;
@@ -95,7 +117,7 @@ void _worker(int start, int* result)
             #if LOAD_BALANCE_TIME
                 double t = omp_get_wtime();
             #endif
-            c.real = i * d_x + x_L;
+            c.real = (i + start) * d_x + x_L;
             c.imag = j * d_y + y_L;
             result[j * job_width + i + 1] = cal_pixel(c, I_max);
             #if LOAD_BALANCE_TIME
@@ -122,13 +144,12 @@ void _worker(int start, int* result)
 
 void master()
 {
-    //if (gui) create_display(0, 0, height, width);
     if (world_size == 1) {
         _worker(MASTER, result);
-        //if (gui) { gui_draw(result[0], result + 1); flush(); }
         return;
     }
 
+    double start_wtime = MPI_Wtime();
     MPI_Status stat;
     int actives = 1, jobs = 0, start;
     for (; actives < world_size && jobs < N_x; actives++, jobs += job_width) {
@@ -153,7 +174,8 @@ void master()
             MPI_Send(&jobs, 1, MPI_INT, slave, TERMINATE, MPI_COMM_WORLD);
         }
     } while (actives > 1);
-    write_pgm_image((void*) image, I_max, N_x, N_y, "mandelbrot_set")
+    printf("Total Wtime: %f", MPI_Wtime() - start_wtime);
+    write_pgm_image((void*) image, I_max, N_x, N_y, "mandelbrot_set.pgm")
 }
 
 void slave()
@@ -222,4 +244,6 @@ int main(int argc, char** argv) {
             }
         }
     #endif
+    MPI_Finalize();
+    return 0;
 }
