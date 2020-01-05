@@ -26,7 +26,6 @@
 #include <time.h>
 #include <omp.h>
 #include <mpi.h>
-//#include <complex.h>
 
 //mpi tags
 #define DATA 0
@@ -46,6 +45,11 @@ struct complex
     double imag;
 };
 
+/**
+ * Function that given a a complex number c and and integer,
+ * computes if c belongs to the Mandelbrot Set and returns
+ * the counter used in the loop 
+ */
 int cal_pixel(struct complex c, int max_iter) {
  int count=0;
  struct complex z = c;
@@ -62,7 +66,9 @@ int cal_pixel(struct complex c, int max_iter) {
 }
 
 
-
+/**
+ * prints a grayscale image
+ */
 void write_pgm_image( void *image, int maxval, int xsize, int ysize, const char *image_name)
 {
   FILE* image_file; 
@@ -106,11 +112,18 @@ void write_pgm_image( void *image, int maxval, int xsize, int ysize, const char 
   ------------------------------------------------------------------ */
 }
 
+/**
+ * methods representing the work to be carried out by a slave
+ * start represent the starting index from which the elements computed
+ * will be placed in the final array of pixels
+ * result is a pointer to an array of fixed length which first element
+ * will contain the before mentioned start and the elements computed
+ */
 void _worker(int start, int* result)
 {
-    //int *color = result + 1;
     struct complex c;
     result[0] = start;
+
     #pragma omp parallel for schedule(dynamic, 10) private(c) collapse(2)
     for(int j=0; j < N_y; j++) {
         for(int i = 0; i < job_width; i++) {
@@ -125,23 +138,12 @@ void _worker(int start, int* result)
             #endif
         }
     }
-    
-    /*for (int i = start; i < job_width*start; i++) {
-        for (int y = 0; y < height; y++) {
-            #ifdef _LODE_BALANCE_ANALYSIS_
-                double s = omp_get_wtime();
-            #endif
-                c.real = i * d_x + x_L;
-                c.imag = y * d_y + y_L;
-                result[y * job_width + i] = calc_pixel(c);
-            #ifdef _LODE_BALANCE_ANALYSIS_
-                timer[pid][omp_get_thread_num()] += omp_get_wtime() - s;
-            #endif
-        }
-    }*/
-    //result[0] = start;
 }
 
+/**
+ * method that will be executed by the master only, which will act
+ * as a manager that redistributes the work
+ */
 void master()
 {
     if (world_size == 1) {
@@ -174,10 +176,16 @@ void master()
             MPI_Send(&jobs, 1, MPI_INT, slave, TERMINATE, MPI_COMM_WORLD);
         }
     } while (actives > 1);
+
     printf("Total Wtime: %f", MPI_Wtime() - start_wtime);
     write_pgm_image((void*) image, I_max, N_x, N_y, "mandelbrot_set.pgm")
 }
 
+/**
+ * method used by slaves processes, that will carry out the work and 
+ * reply back to the master with the results until the the 
+ * MPI_TAG == DATA
+ */
 void slave()
 {
     MPI_Status stat;
@@ -192,7 +200,7 @@ void slave()
 
 /**
  * Initialise enviroment
- **/
+ */
 void initial_env(int argc, char** argv) {
     N_x = stoi(argv[1]), N_y = stoi(argv[2]);
     x_L = stod(argv[3]), y_L = stod(argv[4]);
@@ -205,7 +213,7 @@ void initial_env(int argc, char** argv) {
 
 /**
  * Initialise MPI environment
- **/
+ */
 void initial_MPI_env(int argc, char** argv)
 {
     
