@@ -227,7 +227,7 @@ void initial_MPI_env(int argc, char** argv)
     
     job_width = world_size == 1 ? N_x : 20;
     job_size = job_width * N_y;
-    result = (int*) malloc(job_size + 1 * sizeof(int));
+    result = (int*) malloc((job_size + 1) * sizeof(int));
 
     #if LOAD_BALANCE_TIME
         //this matrix is 20x20, no need to allocate it in the heap
