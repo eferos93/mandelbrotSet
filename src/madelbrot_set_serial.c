@@ -25,6 +25,9 @@
 #include <stdio.h>
 #include <time.h>
 
+#define CPU_TIME (clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &ts ), (double)ts.tv_sec + \
+	                  (double)ts.tv_nsec * 1e-9)
+
 int N_x, N_y, I_max, *image;
 double x_L, x_R, y_L, y_R;
 double d_x, d_y;
@@ -131,7 +134,9 @@ void initial_env(int argc, char** argv) {
 int main(int argc, char** argv) {
     initial_env(argc, argv);
     image = (int*) malloc(N_y * N_x * sizeof(int));
+    double start = CPU_TIME;
     _worker(image);
+    printf("I_max = %d; N_x = %d; N_y = %d\nTotal time: %f", I_max, N_x, N_y, CPU_TIME - start);
     write_pgm_image((void*) image, I_max, N_x, N_y, "mandelbrot_set.pgm");
     return 0;
 }
