@@ -36,7 +36,7 @@
 #define MASTER 0
 #define LOAD_BALANCE_TIME
 
-unsigned int I_max, N_x, N_y, job_width, job_remainder, job_size, *image, *result;
+unsigned int I_max, N_x, N_y, job_width, job_remainder, job_remainder_size, job_size, *image, *result;
 int pid, world_size;
 double x_L, x_R, y_L, y_R;
 double d_x, d_y;
@@ -151,26 +151,26 @@ void master()
     unsigned int iterat, start;
     double start_wtime = MPI_Wtime();
     MPI_Status stat;
-    int actives = 1, jobs = 0;
+    unsigned int actives = 1, jobs = 0;
 
     for (; actives < world_size && jobs < N_x; actives++, jobs += job_width) {
         if(jobs + job_width > N_x) {
-            MPI_Send(&jobs, 1, MPI_INT, actives, REMAINDER, MPI_COMM_WORLD);
+            MPI_Send(jobs, 1, MPI_UNSIGNED, actives, REMAINDER, MPI_COMM_WORLD);
             remainder = true;
         } else {
-            MPI_Send(&jobs, 1, MPI_INT, actives, DATA, MPI_COMM_WORLD);
+            MPI_Send(jobs, 1, MPI_UNSIGNED, actives, DATA, MPI_COMM_WORLD);
         }
         
     }
     
     do {
         if (remainder) {
-            result = (int*) realloc((void*) result, (job_remainder + 1) * sizeof(int));
-            MPI_Recv(result, job_remainder+1, MPI_INT, MPI_ANY_SOURCE, REMAINDER, MPI_COMM_WORLD, &stat);
-            iterat = job_remainder;
+            result = (unsigned int*) realloc((void*) result, (job_remainder_size + 1) * sizeof(int));
+            MPI_Recv(result, job_remainder_size+1, MPI_UNSIGNED, MPI_ANY_SOURCE, REMAINDER, MPI_COMM_WORLD, &stat);
+            iterat = job_remainder_size;
             remainder = false;
         } else {
-            MPI_Recv(result, job_size+1, MPI_INT, MPI_ANY_SOURCE, DATA, MPI_COMM_WORLD, &stat);
+            MPI_Recv(result, job_size+1, MPI_UNSIGNED, MPI_ANY_SOURCE, DATA, MPI_COMM_WORLD, &stat);
             iterat = job_width;
         }
         int slave = stat.MPI_SOURCE;
@@ -187,17 +187,17 @@ void master()
                 //if we enter in this branch, we are issuing the last job
                 //and N_y is not divisible by job_width (i.e.  0 < job_remainder < 20)
                 //therefore we send a message with a different tag
-                MPI_Send(&jobs, 1, MPI_INT, slave, REMAINDER, MPI_COMM_WORLD);
+                MPI_Send(jobs, 1, MPI_UNSIGNED, slave, REMAINDER, MPI_COMM_WORLD);
                 jobs += job_remainder;
                 remainder = true;
             } else {
-                MPI_Send(&jobs, 1, MPI_INT, slave, DATA, MPI_COMM_WORLD);
+                MPI_Send(jobs, 1, MPI_UNSIGNED, slave, DATA, MPI_COMM_WORLD);
                 jobs += job_width;
             }
 
             actives++;
         } else { 
-            MPI_Send(&jobs, 1, MPI_INT, slave, TERMINATE, MPI_COMM_WORLD);
+            MPI_Send(jobs, 1, MPI_UNSIGNED, slave, TERMINATE, MPI_COMM_WORLD);
         }
     } while (actives > 1);
 
@@ -214,19 +214,19 @@ void slave()
 {
     MPI_Status stat;
     unsigned int col;
-    MPI_Recv(col, 1, MPI_INT, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
-    
+    MPI_Recv(col, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+    printf("Slave %d col: %d received", pid, col);
     while (stat.MPI_TAG == DATA) {
-        result = (int*) malloc((job_size + 1) * sizeof(int));
+        result = (unsigned int*) malloc((job_size + 1) * sizeof(int));
         _worker(col, result);
-        MPI_Send(result, job_size+1, MPI_INT, MASTER, RESULT, MPI_COMM_WORLD);
-        MPI_Recv(col, 1, MPI_INT, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+        MPI_Send(result, job_size+1, MPI_UNSIGNED, MASTER, RESULT, MPI_COMM_WORLD);
+        MPI_Recv(col, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
     }
 
     if (stat.MPI_TAG == REMAINDER) {
-        result = (int*) realloc((void*) result, (job_remainder+1) * sizeof(int));
+        result = (unsigned int*) realloc((void*) result, (job_remainder_size+1) * sizeof(int));
         _worker(col, result);
-        MPI_Send(result, job_remainder+1, MPI_INT, MASTER, REMAINDER, MPI_COMM_WORLD);
+        MPI_Send(result, job_remainder_size+1, MPI_UNSIGNED, MASTER, REMAINDER, MPI_COMM_WORLD);
     }
 }
 
@@ -258,12 +258,13 @@ void initial_MPI_env(int argc, char** argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &pid);
 
     if(pid == MASTER) {
-        image = (int*) malloc(N_y * N_x * sizeof(int));
+        image = (unsigned int*) malloc(N_y * N_x * sizeof(int));
     }
     
     job_width = world_size == 1 ? N_x : 20;
     if (world_size > 1) {
-        job_remainder = (N_x % 20) * N_y;
+        job_remainder = (N_x % 20);
+        job_remainder_size = job_remainder * N_y;
     }
     job_size = job_width * N_y;
 }
@@ -275,7 +276,9 @@ void start()
 
 int main(int argc, char** argv) {
     initial_env(argc, argv);
+    printf("Init done\n");
     initial_MPI_env(argc, argv);
+    printf("MPI init done\n");
     //this matrix is 20x20, no need to allocate it in the heap
     //int thread_time[world_size][omp_get_num_threads];
     start();
