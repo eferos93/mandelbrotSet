@@ -121,17 +121,17 @@ void write_pgm_image( void *image, int maxval, unsigned int xsize, unsigned int 
  * result is a pointer to an array of fixed length which first element
  * will contain the before mentioned start and the elements computed
  */
-void _worker(unsigned int start, unsigned int* result)
+void _worker(unsigned int start, unsigned int* result, unsigned int work_amount)
 {
     struct complex c;
     result[0] = start;
 
     #pragma omp parallel for schedule(dynamic, 10) private(c) collapse(2)
     for(int j=0; j < N_y; j++) {
-        for(int i = 0; i < job_width; i++) {
+        for(int i = 0; i < work_amount; i++) {
             c.real = (i + start) * d_x + x_L;
             c.imag = j * d_y + y_L;
-            result[j * job_width + i + 1] = cal_pixel(c, I_max);
+            result[j * work_amount + i + 1] = cal_pixel(c, I_max);
         }
     }
 }
@@ -154,25 +154,22 @@ void master()
     unsigned int actives = 1, jobs = 0;
 
     for (; actives < world_size && jobs < N_x; actives++, jobs += job_width) {
-        if(jobs + job_width > N_x) {
-            MPI_Send(jobs, 1, MPI_UNSIGNED, actives, REMAINDER, MPI_COMM_WORLD);
-            remainder = true;
-        } else {
-            MPI_Send(jobs, 1, MPI_UNSIGNED, actives, DATA, MPI_COMM_WORLD);
-        }
+        int tag;
+        if(jobs + job_width > N_x) tag = REMAINDER; else tag = DATA;
         
+        MPI_Send(jobs, 1, MPI_UNSIGNED, actives, tag, MPI_COMM_WORLD);
     }
     
     do {
-        if (remainder) {
-            result = (unsigned int*) realloc((void*) result, (job_remainder_size + 1) * sizeof(int));
-            MPI_Recv(result, job_remainder_size+1, MPI_UNSIGNED, MPI_ANY_SOURCE, REMAINDER, MPI_COMM_WORLD, &stat);
-            iterat = job_remainder_size;
-            remainder = false;
+        result = (unsigned int*) malloc((job_size + 1) * sizeof(int));
+        MPI_Recv(result, job_size+1, MPI_UNSIGNED, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+        if(stat.MPI_TAG == DATA) {
+            iterat = job_size;
         } else {
-            MPI_Recv(result, job_size+1, MPI_UNSIGNED, MPI_ANY_SOURCE, DATA, MPI_COMM_WORLD, &stat);
-            iterat = job_width;
+            iterat = job_remainder_size;
         }
+        
+        
         int slave = stat.MPI_SOURCE;
         start = result[0];
         //no need to parallelize this loop, just 20 iterations
@@ -181,16 +178,16 @@ void master()
         }
         
         actives--;
-        if (jobs < N_x) {
-            
+        if (jobs < N_x) { 
             if (jobs + job_width > N_x) {
                 //if we enter in this branch, we are issuing the last job
                 //and N_y is not divisible by job_width (i.e.  0 < job_remainder < 20)
                 //therefore we send a message with a different tag
+                printf("1\n");
                 MPI_Send(jobs, 1, MPI_UNSIGNED, slave, REMAINDER, MPI_COMM_WORLD);
                 jobs += job_remainder;
-                remainder = true;
             } else {
+                printf("2\n");
                 MPI_Send(jobs, 1, MPI_UNSIGNED, slave, DATA, MPI_COMM_WORLD);
                 jobs += job_width;
             }
@@ -216,17 +213,21 @@ void slave()
     unsigned int col;
     MPI_Recv(col, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
     printf("Slave %d col: %d received", pid, col);
-    while (stat.MPI_TAG == DATA) {
-        result = (unsigned int*) malloc((job_size + 1) * sizeof(int));
-        _worker(col, result);
-        MPI_Send(result, job_size+1, MPI_UNSIGNED, MASTER, RESULT, MPI_COMM_WORLD);
-        MPI_Recv(col, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
-    }
+    result = (unsigned int*) malloc((job_size + 1) * sizeof(int));
 
-    if (stat.MPI_TAG == REMAINDER) {
-        result = (unsigned int*) realloc((void*) result, (job_remainder_size+1) * sizeof(int));
-        _worker(col, result);
-        MPI_Send(result, job_remainder_size+1, MPI_UNSIGNED, MASTER, REMAINDER, MPI_COMM_WORLD);
+    while (stat.MPI_TAG != TERMINATE) 
+    {
+        int tag;
+        if(stat.MPI_TAG == DATA) {
+            _worker(col, result, job_width);
+            tag = DATA;
+        } else {
+            //TAG == REMAINDER
+            _worker(col, result, job_remainder);
+            tag = REMAINDER;
+        }
+        MPI_Send(result, job_size+1, MPI_UNSIGNED, MASTER, tag, MPI_COMM_WORLD);
+        MPI_Recv(col, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
     }
 }
 

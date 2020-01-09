@@ -32,7 +32,7 @@
 	                  (double)ts.tv_nsec * 1e-9)
 
 struct timespec ts;
-int N_x, N_y, I_max, *image;
+unsigned int N_x, N_y, I_max, *image;
 double x_L, x_R, y_L, y_R;
 double d_x, d_y;
 
@@ -93,12 +93,14 @@ void write_pgm_image( void *image, int maxval, int xsize, int ysize, const char 
  * computes if c belongs to the Mandelbrot Set and returns
  * the counter used in the loop 
  */
-int cal_pixel(struct complex c, int max_iter) {
+unsigned int cal_pixel(struct complex c, int max_iter) {
  int count=0;
- struct complex z = c;
+ struct complex z;
+ z.real = 0.0;
+ z.imag = 0.0;
  double temp;
 
- while ((z.real * z.real + z.imag * z.imag <= 4.0) && (count < max_iter)) {
+ while ((z.real * z.real + z.imag * z.imag < 4.0) && (count < max_iter)) {
     temp = z.real * z.real - z.imag * z.imag + c.real;
     z.imag = 2 * z.real * z.imag + c.imag;
     z.real = temp;
@@ -109,15 +111,15 @@ int cal_pixel(struct complex c, int max_iter) {
 }
 
 
-void _worker(int* result)
+void _worker(unsigned int* result)
 {
     struct complex c;
   
-    for(int j = 0; j < N_y; j++) {
-        for(int i = 0; i < N_x; i++) {
+    for(int i = 0; i < N_x; i++) {
+        for(int j = 0; j < N_y; j++) {
             c.real = i * d_x + x_L;
             c.imag = j * d_y + y_L;
-            image[j * N_x + i] = cal_pixel(c, I_max);
+            image[i * N_x + j] = cal_pixel(c, I_max);
         }
     }
 }
@@ -137,7 +139,7 @@ void initial_env(int argc, char** argv) {
 
 int main(int argc, char** argv) {
     initial_env(argc, argv);
-    image = (int*) malloc(N_y * N_x * sizeof(int));
+    image = (unsigned int*) malloc(N_x * N_y * sizeof(unsigned int));
     double start = CPU_TIME;
     _worker(image);
     printf("I_max = %d; N_x = %d; N_y = %d\nTotal time: %f", I_max, N_x, N_y, CPU_TIME - start);
