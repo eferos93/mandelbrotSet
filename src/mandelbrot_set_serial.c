@@ -24,10 +24,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <omp.h>
+
+#define _GNU_SOURCE
 
 #define CPU_TIME (clock_gettime( CLOCK_PROCESS_CPUTIME_ID, &ts ), (double)ts.tv_sec + \
 	                  (double)ts.tv_nsec * 1e-9)
 
+struct timespec ts;
 int N_x, N_y, I_max, *image;
 double x_L, x_R, y_L, y_R;
 double d_x, d_y;
@@ -122,10 +126,10 @@ void _worker(int* result)
  * Initialise enviroment
  */
 void initial_env(int argc, char** argv) {
-    N_x = stoi(argv[1]), N_y = stoi(argv[2]);
-    x_L = stod(argv[3]), y_L = stod(argv[4]);
-    x_R = stod(argv[5]), y_R = stod(argv[6]);
-    I_max = stoi(argv[7]);
+    N_x = atoi(argv[1]), N_y = atoi(argv[2]);
+    x_L = atof(argv[3]), y_L = atof(argv[4]);
+    x_R = atof(argv[5]), y_R = atof(argv[6]);
+    I_max = atoi(argv[7]);
 
     d_x = (x_R - x_L) / N_x;
     d_y = (y_R - y_L) / N_y;

@@ -26,15 +26,17 @@
 #include <time.h>
 #include <omp.h>
 #include <mpi.h>
+#include <stdbool.h>
 
 //mpi tags
 #define DATA 0
 #define RESULT 1
 #define TERMINATE 2
+#define REMAINDER 3
 #define MASTER 0
-#define LOAD_BALANCE_TIME true
+#define LOAD_BALANCE_TIME
 
-int N_x, N_y, I_max, job_width, job_size, *image, *result;
+unsigned int I_max, N_x, N_y, job_width, job_remainder, job_size, *image, *result;
 int pid, world_size;
 double x_L, x_R, y_L, y_R;
 double d_x, d_y;
@@ -50,7 +52,7 @@ struct complex
  * computes if c belongs to the Mandelbrot Set and returns
  * the counter used in the loop 
  */
-int cal_pixel(struct complex c, int max_iter) {
+int cal_pixel(struct complex c, unsigned int max_iter) {
  int count=0;
  struct complex z = c;
  double temp;
@@ -69,7 +71,7 @@ int cal_pixel(struct complex c, int max_iter) {
 /**
  * prints a grayscale image
  */
-void write_pgm_image( void *image, int maxval, int xsize, int ysize, const char *image_name)
+void write_pgm_image( void *image, int maxval, unsigned int xsize, unsigned int ysize, const char *image_name)
 {
   FILE* image_file; 
   image_file = fopen(image_name, "w"); 
@@ -119,7 +121,7 @@ void write_pgm_image( void *image, int maxval, int xsize, int ysize, const char 
  * result is a pointer to an array of fixed length which first element
  * will contain the before mentioned start and the elements computed
  */
-void _worker(int start, int* result)
+void _worker(unsigned int start, unsigned int* result)
 {
     struct complex c;
     result[0] = start;
@@ -127,15 +129,9 @@ void _worker(int start, int* result)
     #pragma omp parallel for schedule(dynamic, 10) private(c) collapse(2)
     for(int j=0; j < N_y; j++) {
         for(int i = 0; i < job_width; i++) {
-            #if LOAD_BALANCE_TIME
-                double t = omp_get_wtime();
-            #endif
             c.real = (i + start) * d_x + x_L;
             c.imag = j * d_y + y_L;
             result[j * job_width + i + 1] = cal_pixel(c, I_max);
-            #if LOAD_BALANCE_TIME
-                thread_time[pid][omp_get_thread_num()] = omp_get_wtime() - t;
-            #endif
         }
     }
 }
@@ -151,26 +147,54 @@ void master()
         return;
     }
 
+    bool remainder = false;
+    unsigned int iterat, start;
     double start_wtime = MPI_Wtime();
     MPI_Status stat;
-    int actives = 1, jobs = 0, start;
+    int actives = 1, jobs = 0;
+
     for (; actives < world_size && jobs < N_x; actives++, jobs += job_width) {
-        MPI_Send(&jobs, 1, MPI_INT, actives, DATA, MPI_COMM_WORLD);
+        if(jobs + job_width > N_x) {
+            MPI_Send(&jobs, 1, MPI_INT, actives, REMAINDER, MPI_COMM_WORLD);
+            remainder = true;
+        } else {
+            MPI_Send(&jobs, 1, MPI_INT, actives, DATA, MPI_COMM_WORLD);
+        }
+        
     }
     
     do {
-        MPI_Recv(result, job_size+1, MPI_INT, MPI_ANY_SOURCE, RESULT, MPI_COMM_WORLD, &stat);
+        if (remainder) {
+            result = (int*) realloc((void*) result, (job_remainder + 1) * sizeof(int));
+            MPI_Recv(result, job_remainder+1, MPI_INT, MPI_ANY_SOURCE, REMAINDER, MPI_COMM_WORLD, &stat);
+            iterat = job_remainder;
+            remainder = false;
+        } else {
+            MPI_Recv(result, job_size+1, MPI_INT, MPI_ANY_SOURCE, DATA, MPI_COMM_WORLD, &stat);
+            iterat = job_width;
+        }
         int slave = stat.MPI_SOURCE;
         start = result[0];
         //no need to parallelize this loop, just 20 iterations
-        for(int i = 1; start < start + job_width; i++, start++) {
+        for(int i = 1; start < start + iterat; i++, start++) {
             image[start] = result[i];
         }
         
         actives--;
         if (jobs < N_x) {
-            MPI_Send(&jobs, 1, MPI_INT, slave, DATA, MPI_COMM_WORLD);
-            jobs += job_width;
+            
+            if (jobs + job_width > N_x) {
+                //if we enter in this branch, we are issuing the last job
+                //and N_y is not divisible by job_width (i.e.  0 < job_remainder < 20)
+                //therefore we send a message with a different tag
+                MPI_Send(&jobs, 1, MPI_INT, slave, REMAINDER, MPI_COMM_WORLD);
+                jobs += job_remainder;
+                remainder = true;
+            } else {
+                MPI_Send(&jobs, 1, MPI_INT, slave, DATA, MPI_COMM_WORLD);
+                jobs += job_width;
+            }
+
             actives++;
         } else { 
             MPI_Send(&jobs, 1, MPI_INT, slave, TERMINATE, MPI_COMM_WORLD);
@@ -178,11 +202,11 @@ void master()
     } while (actives > 1);
 
     printf("Total Wtime: %f", MPI_Wtime() - start_wtime);
-    write_pgm_image((void*) image, I_max, N_x, N_y, "mandelbrot_set.pgm")
+    write_pgm_image((void*) image, I_max, N_x, N_y, "mandelbrot_set.pgm");
 }
 
 /**
- * method used by slaves processes, that will carry out the work and 
+ * method used by slave processes, that will carry out the work and 
  * reply back to the master with the results until the the 
  * MPI_TAG == DATA
  */
@@ -191,10 +215,18 @@ void slave()
     MPI_Status stat;
     unsigned int col;
     MPI_Recv(col, 1, MPI_INT, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+    
     while (stat.MPI_TAG == DATA) {
+        result = (int*) malloc((job_size + 1) * sizeof(int));
         _worker(col, result);
         MPI_Send(result, job_size+1, MPI_INT, MASTER, RESULT, MPI_COMM_WORLD);
         MPI_Recv(col, 1, MPI_INT, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+    }
+
+    if (stat.MPI_TAG == REMAINDER) {
+        result = (int*) realloc((void*) result, (job_remainder+1) * sizeof(int));
+        _worker(col, result);
+        MPI_Send(result, job_remainder+1, MPI_INT, MASTER, REMAINDER, MPI_COMM_WORLD);
     }
 }
 
@@ -202,11 +234,15 @@ void slave()
  * Initialise enviroment
  */
 void initial_env(int argc, char** argv) {
-    N_x = stoi(argv[1]), N_y = stoi(argv[2]);
-    x_L = stod(argv[3]), y_L = stod(argv[4]);
-    x_R = stod(argv[5]), y_R = stod(argv[6]);
-    I_max = stoi(argv[7]);
+    N_x = atoi(argv[1]), N_y = atoi(argv[2]);
+    x_L = atof(argv[3]), y_L = atof(argv[4]);
+    x_R = atof(argv[5]), y_R = atof(argv[6]);
+    I_max = atoi(argv[7]);
 
+    if(N_y < 250 || N_y < 250) {
+        printf("N_y and N_x must be at least 250");
+        exit(0);
+    }
     d_x = (x_R - x_L) / N_x;
     d_y = (y_R - y_L) / N_y;
 }
@@ -226,13 +262,10 @@ void initial_MPI_env(int argc, char** argv)
     }
     
     job_width = world_size == 1 ? N_x : 20;
+    if (world_size > 1) {
+        job_remainder = (N_x % 20) * N_y;
+    }
     job_size = job_width * N_y;
-    result = (int*) malloc((job_size + 1) * sizeof(int));
-
-    #if LOAD_BALANCE_TIME
-        //this matrix is 20x20, no need to allocate it in the heap
-        int thread_time[world_size][omp_get_num_threads];
-    #endif
 }
 
 void start()
@@ -243,15 +276,9 @@ void start()
 int main(int argc, char** argv) {
     initial_env(argc, argv);
     initial_MPI_env(argc, argv);
+    //this matrix is 20x20, no need to allocate it in the heap
+    //int thread_time[world_size][omp_get_num_threads];
     start();
-    #if LOAD_BALANCE_TIME
-        for(int i = 0; i < 20; i++) {
-            printf("Thread times for process %d are: \n", i);
-            for(int j = 0; j < 20; j++) {
-                printf("thread num %d: %d", j, thread_time[i][j]);
-            }
-        }
-    #endif
     MPI_Finalize();
     return 0;
 }
