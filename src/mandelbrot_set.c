@@ -52,20 +52,24 @@ struct complex
  * computes if c belongs to the Mandelbrot Set and returns
  * the counter used in the loop 
  */
-int cal_pixel(struct complex c, unsigned int max_iter) {
- int count=0;
- struct complex z = c;
- double temp;
+unsigned int compute_pixel(struct complex c, unsigned int max_iter) 
+{
+    unsigned int count=0;
+    struct complex z;
+    z.real = 0.0;
+    z.imag = 0.0;
+    double temp;
 
- while ((z.real * z.real + z.imag * z.imag <= 4.0) && (count < max_iter)) {
-    temp = z.real * z.real - z.imag * z.imag + c.real;
-    z.imag = 2 * z.real * z.imag + c.imag;
-    z.real = temp;
-    count++;
- }
+    while ((z.real * z.real + z.imag * z.imag < 4.0) && (count < max_iter)) {
+        temp = z.real * z.real - z.imag * z.imag + c.real;
+        z.imag = 2.0 * z.real * z.imag + c.imag;
+        z.real = temp;
+        count++;
+    }
 
- return count;
+    return count;
 }
+
 
 
 /**
@@ -127,11 +131,11 @@ void _worker(unsigned int start, unsigned int* result, unsigned int work_amount)
     result[0] = start;
 
     #pragma omp parallel for schedule(dynamic, 10) private(c) collapse(2)
-    for(int j=0; j < N_y; j++) {
-        for(int i = 0; i < work_amount; i++) {
-            c.real = (i + start) * d_x + x_L;
+    for(int i = 0; i < work_amount; i++) {
+        c.real = (i + start) * d_x + x_L;
+        for(int j = 0; j < N_y; j++) {
             c.imag = j * d_y + y_L;
-            result[j * work_amount + i + 1] = cal_pixel(c, I_max);
+            result[j * work_amount + i + 1] = compute_pixel(c, I_max);
         }
     }
 }
@@ -143,24 +147,27 @@ void _worker(unsigned int start, unsigned int* result, unsigned int work_amount)
 void master()
 {
     if (world_size == 1) {
-        _worker(MASTER, result);
+        _worker(MASTER, result, N_x);
         return;
     }
 
-    bool remainder = false;
     unsigned int iterat, start;
     double start_wtime = MPI_Wtime();
     MPI_Status stat;
     unsigned int actives = 1, jobs = 0;
+    //if N_x is not divisible by 20 then we distribute the remainder
+    if(job_remainder != 0) job_width++;
 
     for (; actives < world_size && jobs < N_x; actives++, jobs += job_width) {
-        int tag;
-        if(jobs + job_width > N_x) tag = REMAINDER; else tag = DATA;
+        //int tag;
+        //if(jobs + job_width > N_x) tag = REMAINDER; else tag = DATA;
         
         MPI_Send(jobs, 1, MPI_UNSIGNED, actives, tag, MPI_COMM_WORLD);
+        if (--job_remainder == 0) --job_width;
     }
     
     do {
+        
         result = (unsigned int*) malloc((job_size + 1) * sizeof(int));
         MPI_Recv(result, job_size+1, MPI_UNSIGNED, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
         if(stat.MPI_TAG == DATA) {
@@ -196,6 +203,8 @@ void master()
         } else { 
             MPI_Send(jobs, 1, MPI_UNSIGNED, slave, TERMINATE, MPI_COMM_WORLD);
         }
+        
+        free(result);
     } while (actives > 1);
 
     printf("Total Wtime: %f", MPI_Wtime() - start_wtime);

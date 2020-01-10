@@ -42,10 +42,29 @@ struct complex
     double imag;
 };
 
+void write_pgm_image(void *image, unsigned int maxval,
+                     unsigned int xsize, unsigned int ysize, const char *image_name);
+
+unsigned int compute_pixel(struct complex c, unsigned int max_iter);
+void _worker(unsigned int* result);
+void initial_env(int argc, char** argv);
+
+
+int main(int argc, char** argv) {
+    initial_env(argc, argv);
+    image = (unsigned int*) malloc(N_x * N_y * sizeof(unsigned int));
+    double start = CPU_TIME;
+    _worker(image);
+    printf("Total time: %f", CPU_TIME - start);
+    write_pgm_image(image, I_max, N_x, N_y, "mandelbrot_set.pgm");
+    return 0;
+}
+
 /**
  * prints a grayscale image
  */
-void write_pgm_image( void *image, int maxval, int xsize, int ysize, const char *image_name)
+void write_pgm_image(void *image, unsigned int maxval,
+                     unsigned int xsize, unsigned int ysize, const char *image_name)
 {
   FILE* image_file; 
   image_file = fopen(image_name, "w"); 
@@ -93,21 +112,22 @@ void write_pgm_image( void *image, int maxval, int xsize, int ysize, const char 
  * computes if c belongs to the Mandelbrot Set and returns
  * the counter used in the loop 
  */
-unsigned int cal_pixel(struct complex c, int max_iter) {
- int count=0;
- struct complex z;
- z.real = 0.0;
- z.imag = 0.0;
- double temp;
+unsigned int compute_pixel(struct complex c, unsigned int max_iter) 
+{
+    unsigned int count=0;
+    struct complex z;
+    z.real = 0.0;
+    z.imag = 0.0;
+    double temp;
 
- while ((z.real * z.real + z.imag * z.imag < 4.0) && (count < max_iter)) {
-    temp = z.real * z.real - z.imag * z.imag + c.real;
-    z.imag = 2 * z.real * z.imag + c.imag;
-    z.real = temp;
-    count++;
- }
+    while ((z.real * z.real + z.imag * z.imag < 4.0) && (count < max_iter)) {
+        temp = z.real * z.real - z.imag * z.imag + c.real;
+        z.imag = 2.0 * z.real * z.imag + c.imag;
+        z.real = temp;
+        count++;
+    }
 
- return count;
+    return count;
 }
 
 
@@ -116,10 +136,10 @@ void _worker(unsigned int* result)
     struct complex c;
   
     for(int i = 0; i < N_x; i++) {
+        c.real = i * d_x + x_L;
         for(int j = 0; j < N_y; j++) {
-            c.real = i * d_x + x_L;
             c.imag = j * d_y + y_L;
-            image[i * N_x + j] = cal_pixel(c, I_max);
+            result[j * N_x + i] = compute_pixel(c, I_max);
         }
     }
 }
@@ -127,22 +147,15 @@ void _worker(unsigned int* result)
 /**
  * Initialise enviroment
  */
-void initial_env(int argc, char** argv) {
+void initial_env(int argc, char** argv) 
+{
     N_x = atoi(argv[1]), N_y = atoi(argv[2]);
     x_L = atof(argv[3]), y_L = atof(argv[4]);
     x_R = atof(argv[5]), y_R = atof(argv[6]);
     I_max = atoi(argv[7]);
-
+    
     d_x = (x_R - x_L) / N_x;
     d_y = (y_R - y_L) / N_y;
-}
-
-int main(int argc, char** argv) {
-    initial_env(argc, argv);
-    image = (unsigned int*) malloc(N_x * N_y * sizeof(unsigned int));
-    double start = CPU_TIME;
-    _worker(image);
-    printf("I_max = %d; N_x = %d; N_y = %d\nTotal time: %f", I_max, N_x, N_y, CPU_TIME - start);
-    write_pgm_image((void*) image, I_max, N_x, N_y, "mandelbrot_set.pgm");
-    return 0;
+    printf("N_x: %d; N_y: %d; x_L: %f; y_L: %f; x_R: %f; y_R: %f; I_max: %d; d_x: %f; d_y: %f;",
+            N_x, N_y, x_L, y_L, x_R, y_R, I_max, d_x, d_y);
 }
