@@ -48,7 +48,7 @@ struct complex
 };
 
 /**
- * Function that given a a complex number c and and integer,
+ * Function that given a complex number c and and integer,
  * computes if c belongs to the Mandelbrot Set and returns
  * the counter used in the loop 
  */
@@ -75,7 +75,8 @@ unsigned int compute_pixel(struct complex c, unsigned int max_iter)
 /**
  * prints a grayscale image
  */
-void write_pgm_image( void *image, int maxval, unsigned int xsize, unsigned int ysize, const char *image_name)
+void write_pgm_image(void *image, unsigned int maxval,
+                     unsigned int xsize, unsigned int ysize, const char *image_name)
 {
   FILE* image_file; 
   image_file = fopen(image_name, "w"); 
@@ -132,8 +133,8 @@ void _worker(unsigned int start, unsigned int* result, unsigned int work_amount)
 
     #pragma omp parallel for schedule(dynamic, 10) private(c) collapse(2)
     for(int i = 0; i < work_amount; i++) {
-        c.real = (i + start) * d_x + x_L;
         for(int j = 0; j < N_y; j++) {
+            c.real = (i + start) * d_x + x_L;
             c.imag = j * d_y + y_L;
             result[j * work_amount + i + 1] = compute_pixel(c, I_max);
         }
@@ -146,36 +147,38 @@ void _worker(unsigned int start, unsigned int* result, unsigned int work_amount)
  */
 void master()
 {
+    printf("Master started");
     if (world_size == 1) {
         _worker(MASTER, result, N_x);
         return;
     }
-
     unsigned int iterat, start;
-    double start_wtime = MPI_Wtime();
     MPI_Status stat;
     unsigned int actives = 1, jobs = 0;
-    //if N_x is not divisible by 20 then we distribute the remainder
-    if(job_remainder != 0) job_width++;
+    int tag = DATA;
+
+    double start_wtime = MPI_Wtime();
 
     for (; actives < world_size && jobs < N_x; actives++, jobs += job_width) {
-        //int tag;
-        //if(jobs + job_width > N_x) tag = REMAINDER; else tag = DATA;
-        
-        MPI_Send(jobs, 1, MPI_UNSIGNED, actives, tag, MPI_COMM_WORLD);
-        if (--job_remainder == 0) --job_width;
+        //if N_x % 20 != 0 then, for the last message to be sent, we use a different tag
+        if(jobs + job_width > N_x) tag = REMAINDER;
+        printf("Sending %u offset to %u slave", jobs, actives);
+        MPI_Send(&jobs, 1, MPI_UNSIGNED, actives, tag, MPI_COMM_WORLD);
     }
-    
+    printf("jobs distributed");
     do {
         
-        result = (unsigned int*) malloc((job_size + 1) * sizeof(int));
-        MPI_Recv(result, job_size+1, MPI_UNSIGNED, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
-        if(stat.MPI_TAG == DATA) {
-            iterat = job_size;
-        } else {
-            iterat = job_remainder_size;
-        }
+        result = (unsigned int*) malloc((job_size + 1) * sizeof(unsigned int));
         
+        if (result == NULL) 
+        {
+            printf("Not able to allocate result on MASTER");
+            exit(1);
+        }
+
+        MPI_Recv(result, job_size+1, MPI_UNSIGNED, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+        
+        iterat = stat.MPI_TAG == DATA ? job_size : job_remainder_size;
         
         int slave = stat.MPI_SOURCE;
         start = result[0];
@@ -191,24 +194,24 @@ void master()
                 //and N_y is not divisible by job_width (i.e.  0 < job_remainder < 20)
                 //therefore we send a message with a different tag
                 printf("1\n");
-                MPI_Send(jobs, 1, MPI_UNSIGNED, slave, REMAINDER, MPI_COMM_WORLD);
+                MPI_Send(&jobs, 1, MPI_UNSIGNED, slave, REMAINDER, MPI_COMM_WORLD);
                 jobs += job_remainder;
             } else {
                 printf("2\n");
-                MPI_Send(jobs, 1, MPI_UNSIGNED, slave, DATA, MPI_COMM_WORLD);
+                MPI_Send(&jobs, 1, MPI_UNSIGNED, slave, DATA, MPI_COMM_WORLD);
                 jobs += job_width;
             }
 
             actives++;
         } else { 
-            MPI_Send(jobs, 1, MPI_UNSIGNED, slave, TERMINATE, MPI_COMM_WORLD);
+            MPI_Send(&jobs, 1, MPI_UNSIGNED, slave, TERMINATE, MPI_COMM_WORLD);
         }
         
         free(result);
     } while (actives > 1);
 
     printf("Total Wtime: %f", MPI_Wtime() - start_wtime);
-    write_pgm_image((void*) image, I_max, N_x, N_y, "mandelbrot_set.pgm");
+    write_pgm_image(image, I_max, N_x, N_y, "mandelbrot_set_parallel.pgm");
 }
 
 /**
@@ -218,32 +221,38 @@ void master()
  */
 void slave()
 {
+    printf("Slave %d started",pid);
     MPI_Status stat;
-    unsigned int col;
-    MPI_Recv(col, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
-    printf("Slave %d col: %d received", pid, col);
-    result = (unsigned int*) malloc((job_size + 1) * sizeof(int));
-
-    while (stat.MPI_TAG != TERMINATE) 
+    unsigned int column_offset, job_width;
+    int tag;
+    MPI_Recv(&column_offset, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+    tag = stat.MPI_TAG;
+    printf("Slave %d column_offset: %d received", pid, column_offset);
+    result = (unsigned int*) malloc((job_size + 1) * sizeof(unsigned int));
+    if (result == NULL)
     {
-        int tag;
-        if(stat.MPI_TAG == DATA) {
-            _worker(col, result, job_width);
-            tag = DATA;
+        printf("Malloc error in slave %d", pid);
+    }
+    
+    while (tag != TERMINATE) 
+    {
+        
+        if(tag == DATA) {
+            _worker(column_offset, result, job_width);
         } else {
             //TAG == REMAINDER
-            _worker(col, result, job_remainder);
-            tag = REMAINDER;
+            _worker(column_offset, result, job_remainder);
         }
         MPI_Send(result, job_size+1, MPI_UNSIGNED, MASTER, tag, MPI_COMM_WORLD);
-        MPI_Recv(col, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+        MPI_Recv(&column_offset, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
     }
 }
 
 /**
  * Initialise enviroment
  */
-void initial_env(int argc, char** argv) {
+void initial_env(int argc, char** argv) 
+{
     N_x = atoi(argv[1]), N_y = atoi(argv[2]);
     x_L = atof(argv[3]), y_L = atof(argv[4]);
     x_R = atof(argv[5]), y_R = atof(argv[6]);
@@ -251,6 +260,10 @@ void initial_env(int argc, char** argv) {
 
     if(N_y < 250 || N_y < 250) {
         printf("N_y and N_x must be at least 250");
+        exit(0);
+    }
+    if(N_y != N_x) {
+        printf("N_x and N_x must be equal");
         exit(0);
     }
     d_x = (x_R - x_L) / N_x;
@@ -262,13 +275,12 @@ void initial_env(int argc, char** argv) {
  */
 void initial_MPI_env(int argc, char** argv)
 {
-    
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &pid);
 
     if(pid == MASTER) {
-        image = (unsigned int*) malloc(N_y * N_x * sizeof(int));
+        image = (unsigned int*) malloc(N_y * N_x * sizeof(unsigned int));
     }
     
     job_width = world_size == 1 ? N_x : 20;
@@ -279,19 +291,106 @@ void initial_MPI_env(int argc, char** argv)
     job_size = job_width * N_y;
 }
 
-void start()
-{
-    pid == MASTER ? master() : slave();
-}
-
 int main(int argc, char** argv) {
     initial_env(argc, argv);
     printf("Init done\n");
     initial_MPI_env(argc, argv);
-    printf("MPI init done\n");
-    //this matrix is 20x20, no need to allocate it in the heap
-    //int thread_time[world_size][omp_get_num_threads];
-    start();
+    printf("pid %d: MPI init done\n", pid);
+    //pid == MASTER ? master() : slave();
+    if(pid == MASTER) {
+        printf("Master started");
+        if (world_size == 1) {
+            _worker(MASTER, result, N_x);
+            exit(0);
+        }
+        unsigned int iterat, start;
+        MPI_Status stat;
+        unsigned int actives = 1, jobs = 0;
+        int tag = DATA;
+
+        double start_wtime = MPI_Wtime();
+
+        for (; actives < world_size && jobs < N_x; actives++, jobs += job_width) {
+            //if N_x % 20 != 0 then, for the last message to be sent, we use a different tag
+            if(jobs + job_width > N_x) tag = REMAINDER;
+            printf("Sending %u offset to %u slave", jobs, actives);
+            MPI_Send(&jobs, 1, MPI_UNSIGNED, actives, tag, MPI_COMM_WORLD);
+        }
+        printf("jobs distributed");
+
+        do {
+            
+            result = (unsigned int*) malloc((job_size + 1) * sizeof(unsigned int));
+            
+            if (result == NULL) 
+            {
+                printf("Not able to allocate result on MASTER");
+                exit(1);
+            }
+
+            MPI_Recv(result, job_size+1, MPI_UNSIGNED, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+            
+            iterat = stat.MPI_TAG == DATA ? job_size : job_remainder_size;
+            
+            int slave = stat.MPI_SOURCE;
+            start = result[0];
+            //no need to parallelize this loop, just 20 iterations
+            for(int i = 1; start < start + iterat; i++, start++) {
+                image[start] = result[i];
+            }
+            
+            actives--;
+            if (jobs < N_x) { 
+                if (jobs + job_width > N_x) {
+                    //if we enter in this branch, we are issuing the last job
+                    //and N_y is not divisible by job_width (i.e.  0 < job_remainder < 20)
+                    //therefore we send a message with a different tag
+                    printf("1\n");
+                    MPI_Send(&jobs, 1, MPI_UNSIGNED, slave, REMAINDER, MPI_COMM_WORLD);
+                    jobs += job_remainder;
+                } else {
+                    printf("2\n");
+                    MPI_Send(&jobs, 1, MPI_UNSIGNED, slave, DATA, MPI_COMM_WORLD);
+                    jobs += job_width;
+                }
+
+                actives++;
+            } else { 
+                MPI_Send(&jobs, 1, MPI_UNSIGNED, slave, TERMINATE, MPI_COMM_WORLD);
+            }
+            
+            free(result);
+        } while (actives > 1);
+
+        printf("Total Wtime: %f", MPI_Wtime() - start_wtime);
+        write_pgm_image(image, I_max, N_x, N_y, "mandelbrot_set_parallel.pgm");
+    } else {
+        printf("Slave %d started",pid);
+        MPI_Status stat;
+        unsigned int column_offset, job_width;
+        int tag;
+        MPI_Recv(&column_offset, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+        tag = stat.MPI_TAG;
+        printf("Slave %d column_offset: %d received", pid, column_offset);
+        result = (unsigned int*) malloc((job_size + 1) * sizeof(unsigned int));
+        if (result == NULL)
+        {
+            printf("Malloc error in slave %d", pid);
+        }
+        
+        while (tag != TERMINATE) 
+        {
+            
+            if(tag == DATA) {
+                _worker(column_offset, result, job_width);
+            } else {
+                //TAG == REMAINDER
+                _worker(column_offset, result, job_remainder);
+            }
+            MPI_Send(result, job_size+1, MPI_UNSIGNED, MASTER, tag, MPI_COMM_WORLD);
+            MPI_Recv(&column_offset, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+        }
+    }
     MPI_Finalize();
     return 0;
 }
