@@ -130,7 +130,7 @@ void _worker(unsigned int start, unsigned int* result, unsigned int work_amount)
 {
     struct complex c;
     result[0] = start;
-
+    printf("Slave %d in _worker; start: %u; work_amount: %u\n");
     #pragma omp parallel for schedule(dynamic, 10) private(c) collapse(2)
     for(int i = 0; i < work_amount; i++) {
         for(int j = 0; j < N_y; j++) {
@@ -147,7 +147,7 @@ void _worker(unsigned int start, unsigned int* result, unsigned int work_amount)
  */
 void master()
 {
-    printf("Master started");
+    printf("Master started\n");
     if (world_size == 1) {
         _worker(MASTER, result, N_x);
         return;
@@ -162,10 +162,10 @@ void master()
     for (; actives < world_size && jobs < N_x; actives++, jobs += job_width) {
         //if N_x % 20 != 0 then, for the last message to be sent, we use a different tag
         if(jobs + job_width > N_x) tag = REMAINDER;
-        printf("Sending %u offset to %u slave", jobs, actives);
+        printf("Sending %u offset to %u slave\n", jobs, actives);
         MPI_Send(&jobs, 1, MPI_UNSIGNED, actives, tag, MPI_COMM_WORLD);
     }
-    printf("jobs distributed");
+    printf("jobs distributed\n");
     do {
         
         result = (unsigned int*) malloc((job_size + 1) * sizeof(unsigned int));
@@ -210,7 +210,7 @@ void master()
         free(result);
     } while (actives > 1);
 
-    printf("Total Wtime: %f", MPI_Wtime() - start_wtime);
+    printf("Total Wtime: %f\n", MPI_Wtime() - start_wtime);
     write_pgm_image(image, I_max, N_x, N_y, "mandelbrot_set_parallel.pgm");
 }
 
@@ -221,17 +221,17 @@ void master()
  */
 void slave()
 {
-    printf("Slave %d started",pid);
+    printf("Slave %d started\n",pid);
     MPI_Status stat;
     unsigned int column_offset, job_width;
     int tag;
     MPI_Recv(&column_offset, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
     tag = stat.MPI_TAG;
-    printf("Slave %d column_offset: %d received", pid, column_offset);
+    printf("Slave %d column_offset: %d received\n", pid, column_offset);
     result = (unsigned int*) malloc((job_size + 1) * sizeof(unsigned int));
     if (result == NULL)
     {
-        printf("Malloc error in slave %d", pid);
+        printf("Malloc error in slave %d\n", pid);
     }
     
     while (tag != TERMINATE) 
@@ -296,101 +296,8 @@ int main(int argc, char** argv) {
     printf("Init done\n");
     initial_MPI_env(argc, argv);
     printf("pid %d: MPI init done\n", pid);
-    //pid == MASTER ? master() : slave();
-    if(pid == MASTER) {
-        printf("Master started");
-        if (world_size == 1) {
-            _worker(MASTER, result, N_x);
-            exit(0);
-        }
-        unsigned int iterat, start;
-        MPI_Status stat;
-        unsigned int actives = 1, jobs = 0;
-        int tag = DATA;
-
-        double start_wtime = MPI_Wtime();
-
-        for (; actives < world_size && jobs < N_x; actives++, jobs += job_width) {
-            //if N_x % 20 != 0 then, for the last message to be sent, we use a different tag
-            if(jobs + job_width > N_x) tag = REMAINDER;
-            printf("Sending %u offset to %u slave", jobs, actives);
-            MPI_Send(&jobs, 1, MPI_UNSIGNED, actives, tag, MPI_COMM_WORLD);
-        }
-        printf("jobs distributed");
-
-        do {
-            
-            result = (unsigned int*) malloc((job_size + 1) * sizeof(unsigned int));
-            
-            if (result == NULL) 
-            {
-                printf("Not able to allocate result on MASTER");
-                exit(1);
-            }
-
-            MPI_Recv(result, job_size+1, MPI_UNSIGNED, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
-            
-            iterat = stat.MPI_TAG == DATA ? job_size : job_remainder_size;
-            
-            int slave = stat.MPI_SOURCE;
-            start = result[0];
-            //no need to parallelize this loop, just 20 iterations
-            for(int i = 1; start < start + iterat; i++, start++) {
-                image[start] = result[i];
-            }
-            
-            actives--;
-            if (jobs < N_x) { 
-                if (jobs + job_width > N_x) {
-                    //if we enter in this branch, we are issuing the last job
-                    //and N_y is not divisible by job_width (i.e.  0 < job_remainder < 20)
-                    //therefore we send a message with a different tag
-                    printf("1\n");
-                    MPI_Send(&jobs, 1, MPI_UNSIGNED, slave, REMAINDER, MPI_COMM_WORLD);
-                    jobs += job_remainder;
-                } else {
-                    printf("2\n");
-                    MPI_Send(&jobs, 1, MPI_UNSIGNED, slave, DATA, MPI_COMM_WORLD);
-                    jobs += job_width;
-                }
-
-                actives++;
-            } else { 
-                MPI_Send(&jobs, 1, MPI_UNSIGNED, slave, TERMINATE, MPI_COMM_WORLD);
-            }
-            
-            free(result);
-        } while (actives > 1);
-
-        printf("Total Wtime: %f", MPI_Wtime() - start_wtime);
-        write_pgm_image(image, I_max, N_x, N_y, "mandelbrot_set_parallel.pgm");
-    } else {
-        printf("Slave %d started",pid);
-        MPI_Status stat;
-        unsigned int column_offset, job_width;
-        int tag;
-        MPI_Recv(&column_offset, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
-        tag = stat.MPI_TAG;
-        printf("Slave %d column_offset: %d received", pid, column_offset);
-        result = (unsigned int*) malloc((job_size + 1) * sizeof(unsigned int));
-        if (result == NULL)
-        {
-            printf("Malloc error in slave %d", pid);
-        }
-        
-        while (tag != TERMINATE) 
-        {
-            
-            if(tag == DATA) {
-                _worker(column_offset, result, job_width);
-            } else {
-                //TAG == REMAINDER
-                _worker(column_offset, result, job_remainder);
-            }
-            MPI_Send(result, job_size+1, MPI_UNSIGNED, MASTER, tag, MPI_COMM_WORLD);
-            MPI_Recv(&column_offset, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
-        }
-    }
+    pid == MASTER ? master() : slave();
+    
     MPI_Finalize();
     return 0;
 }
