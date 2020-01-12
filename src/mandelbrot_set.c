@@ -129,14 +129,16 @@ void write_pgm_image(void *image, unsigned int maxval,
 void _worker(unsigned int start, unsigned int* result, unsigned int work_amount)
 {
     struct complex c;
-    result[0] = start;
+    *result = start;
     printf("Slave %d in _worker; start: %u; work_amount: %u\n", pid, start, work_amount);
     #pragma omp parallel for schedule(dynamic, 10) private(c) collapse(2)
-    for(int i = 0; i < work_amount; i++) {
-        for(int j = 0; j < N_y; j++) {
-            c.real = (i + start) * d_x + x_L;
-            c.imag = j * d_y + y_L;
-            result[j * work_amount + i + 1] = compute_pixel(c, I_max);
+    for(unsigned int i = 0; i < N_y; i++) {
+        for(unsigned int j = 0; j < work_amount; j++) {
+            c.imag = y_L + i * d_y;
+            c.real = x_L + (j + start) * d_x;
+            //result[j * work_amount + i + 1] = compute_pixel(c, I_max);
+            *(result + (i * work_amount + j + 1)) = compute_pixel(c, I_max);
+            //printf("Slave: %d; result[%u] = %u\n", pid, i*work_amount+j+1, *(result + (j*work_amount+i+1)));
         }
     }
 }
@@ -147,7 +149,6 @@ void _worker(unsigned int start, unsigned int* result, unsigned int work_amount)
  */
 void master()
 {
-    printf("Master started\n");
     if (world_size == 1) {
         _worker(MASTER, result, N_x);
         return;
@@ -172,19 +173,19 @@ void master()
         
         if (result == NULL) 
         {
-            printf("Not able to allocate result on MASTER");
+            printf("Not able to allocate result on MASTER\n");
             exit(1);
         }
-
         MPI_Recv(result, job_size+1, MPI_UNSIGNED, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
         
         iterat = stat.MPI_TAG == DATA ? job_size : job_remainder_size;
         
         int slave = stat.MPI_SOURCE;
-        start = result[0];
-        //no need to parallelize this loop, just 20 iterations
-        for(int i = 1; start < start + iterat; i++, start++) {
-            image[start] = result[i];
+        start = *result;
+        
+        unsigned int temp = start + iterat;
+        for(int i = 1; start < temp; i++, start++) {
+            *(image + start) = *(result + i);
         }
         
         actives--;
@@ -224,29 +225,44 @@ void slave()
     printf("Slave %d started\n",pid);
     MPI_Status stat;
     unsigned int column_offset;
-    int tag;
+
     MPI_Recv(&column_offset, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
-    tag = stat.MPI_TAG;
     printf("Slave %d column_offset: %d received\n", pid, column_offset);
-    result = (unsigned int*) malloc((job_size + 1) * sizeof(unsigned int));
+    if(stat.MPI_TAG == DATA)
+    {
+        result = (unsigned int*) malloc((job_size + 1) * sizeof(unsigned int));
+    }
+    else if(stat.MPI_TAG == REMAINDER)
+    {
+        result = (unsigned int*) malloc((job_remainder_size + 1) * sizeof(unsigned int));
+    }
+
     if (result == NULL)
     {
         printf("Malloc error in slave %d\n", pid);
     }
     
-    while (tag != TERMINATE) 
+    while (stat.MPI_TAG != TERMINATE) 
     {
         
-        if(tag == DATA) {
+        if(stat.MPI_TAG == DATA) 
+        {
             printf("Slave: %d; issung _worker with col_off: %u; job_width: %u\n", pid, column_offset, job_width);
             _worker(column_offset, result, job_width);
-        } else {
+        } 
+        else 
+        {
             //TAG == REMAINDER
             printf("Slave %d; issung _worker with col_off: %u; job_rem: %u\n", pid, column_offset, job_remainder);
             _worker(column_offset, result, job_remainder);
         }
-        MPI_Send(result, job_size+1, MPI_UNSIGNED, MASTER, tag, MPI_COMM_WORLD);
+        printf("_worker in slave %d has finished, now sending\n", pid);
+        MPI_Send(result, job_size+1, MPI_UNSIGNED, MASTER, stat.MPI_TAG, MPI_COMM_WORLD);
         MPI_Recv(&column_offset, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+        if (stat.MPI_TAG == TERMINATE) 
+        {
+            printf("Slave %d received a message with tag = TERMINATE\n", pid);
+        }
     }
 }
 
@@ -296,11 +312,10 @@ void initial_MPI_env(int argc, char** argv)
 
 int main(int argc, char** argv) {
     initial_env(argc, argv);
-    printf("Init done\n");
     initial_MPI_env(argc, argv);
-    printf("pid %d: MPI init done\n", pid);
     pid == MASTER ? master() : slave();
     
+    printf("Process %d is terminating..\n", pid);
     MPI_Finalize();
     return 0;
 }

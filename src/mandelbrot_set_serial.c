@@ -135,13 +135,24 @@ void _worker(unsigned int* result)
 {
     struct complex c;
   
-    for(int i = 0; i < N_x; i++) {
+    /*for(int i = 0; i < N_x; i++) {
         c.real = i * d_x + x_L;
         for(int j = 0; j < N_y; j++) {
             c.imag = j * d_y + y_L;
             result[j * N_x + i] = compute_pixel(c, I_max);
         }
+    }*/
+    for (int i = 0; i < N_y; i++)
+    {
+        c.imag = y_L + i * d_y;
+        for (int j = 0; j < N_x; j++)
+        {
+            c.real = x_L + j * d_x;
+            *(result + (i * N_x + j)) = compute_pixel(c, I_max);
+        }
+        
     }
+    
 }
 
 /**
