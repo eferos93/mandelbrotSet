@@ -130,7 +130,7 @@ void _worker(unsigned int start, unsigned int* result, unsigned int work_amount)
 {
     struct complex c;
     result[0] = start;
-    printf("Slave %d in _worker; start: %u; work_amount: %u\n");
+    printf("Slave %d in _worker; start: %u; work_amount: %u\n", pid, start, work_amount);
     #pragma omp parallel for schedule(dynamic, 10) private(c) collapse(2)
     for(int i = 0; i < work_amount; i++) {
         for(int j = 0; j < N_y; j++) {
@@ -162,7 +162,7 @@ void master()
     for (; actives < world_size && jobs < N_x; actives++, jobs += job_width) {
         //if N_x % 20 != 0 then, for the last message to be sent, we use a different tag
         if(jobs + job_width > N_x) tag = REMAINDER;
-        printf("Sending %u offset to %u slave\n", jobs, actives);
+        printf("Sending %u offset to %u slave with tag %d\n", jobs, actives, tag);
         MPI_Send(&jobs, 1, MPI_UNSIGNED, actives, tag, MPI_COMM_WORLD);
     }
     printf("jobs distributed\n");
@@ -223,7 +223,7 @@ void slave()
 {
     printf("Slave %d started\n",pid);
     MPI_Status stat;
-    unsigned int column_offset, job_width;
+    unsigned int column_offset;
     int tag;
     MPI_Recv(&column_offset, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
     tag = stat.MPI_TAG;
@@ -238,9 +238,11 @@ void slave()
     {
         
         if(tag == DATA) {
+            printf("Slave: %d; issung _worker with col_off: %u; job_width: %u\n", pid, column_offset, job_width);
             _worker(column_offset, result, job_width);
         } else {
             //TAG == REMAINDER
+            printf("Slave %d; issung _worker with col_off: %u; job_rem: %u\n", pid, column_offset, job_remainder);
             _worker(column_offset, result, job_remainder);
         }
         MPI_Send(result, job_size+1, MPI_UNSIGNED, MASTER, tag, MPI_COMM_WORLD);
@@ -289,6 +291,7 @@ void initial_MPI_env(int argc, char** argv)
         job_remainder_size = job_remainder * N_y;
     }
     job_size = job_width * N_y;
+    printf("job_remainder: %u; job_width: %u\n", job_remainder, job_width);
 }
 
 int main(int argc, char** argv) {

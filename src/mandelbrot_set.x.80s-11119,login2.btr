@@ -1,0 +1,6 @@
+
+mandelbrot_set.x:11119 terminated with signal 11 at PC=401255 SP=7ffcdf9bc090.  Backtrace:
+./mandelbrot_set.x[0x401255]
+./mandelbrot_set.x[0x401891]
+/lib64/libc.so.6(__libc_start_main+0xfd)[0x355541ed5d]
+./mandelbrot_set.x[0x400d49]
