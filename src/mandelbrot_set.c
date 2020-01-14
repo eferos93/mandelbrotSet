@@ -147,12 +147,13 @@ void _worker(unsigned int start, unsigned int work_amount)
 
     //if I use this it get stuck
     //MPI_File_seek_shared(output_file, 0, MPI_SEEK_END);
-    MPI_File_write_at(output_file, start * N_x, buffer,
-                      N_y * work_amount, MPI_UNSIGNED, &file_stat);
-    if (world_size == 1)
-    {
-        write_pgm_image(buffer, I_max, N_x, N_y, "mandelbrot_set_parallel.pgm");
-    }
+    //MPI_File_write_at(output_file, start * N_x * sizeof(unsigned int), buffer,
+    //                  N_y * work_amount, MPI_UNSIGNED, &file_stat);
+    MPI_File_write(output_file, buffer, N_y * work_amount, MPI_UNSIGNED, &file_stat);
+    //if (world_size == 1)
+    //{
+    //    write_pgm_image(buffer, I_max, N_x, N_y, "mandelbrot_set_parallel.pgm");
+    //}
     
     
     free(buffer);
@@ -169,18 +170,20 @@ void master()
         //write_pgm_image(image, I_max, N_x, N_y, "mandelbrot_set_parallel.pgm");
         return;
     }
-    unsigned int iterat, start;
+    unsigned int start;
+    //unsigned int iterat;
     MPI_Status stat;
-    unsigned int actives = 1, jobs = 0;
-    int tag = DATA;
+    unsigned int slave_id = 1, jobs = 0;
+    int tag;
 
     double start_wtime = MPI_Wtime();
 
-    for (; actives < world_size && jobs < N_x; actives++, jobs += job_height) {
+    for (; slave_id < world_size && jobs < N_x; slave_id++, jobs += job_height) {
         //if N_x % 20 != 0 then, for the last message to be sent, we use a different tag
-        if(jobs + job_height > N_y) tag = REMAINDER;
-        printf("Sending %u offset to %u slave with tag %d\n", jobs, actives, tag);
-        MPI_Send(&jobs, 1, MPI_UNSIGNED, actives, tag, MPI_COMM_WORLD);
+        //if(jobs + job_height > N_y) tag = REMAINDER;
+        tag = (jobs + job_height > N_y) ? REMAINDER : DATA;
+        printf("Sending %u offset to %u slave with tag %d\n", jobs, slave_id, tag);
+        MPI_Send(&jobs, 1, MPI_UNSIGNED, slave_id, tag, MPI_COMM_WORLD);
     }
 
     do {
@@ -207,7 +210,7 @@ void master()
         //    *(image + start) = *(result + i);
         //}
         
-        actives--;
+        slave_id--;
         if (jobs < N_y) { 
             if (jobs + job_height > N_y) {
                 //if we enter in this branch, we are issuing the last job
@@ -220,12 +223,12 @@ void master()
                 jobs += job_height;
             }
 
-            actives++;
+            slave_id++;
         } else { 
             MPI_Send(&jobs, 1, MPI_UNSIGNED, slave, TERMINATE, MPI_COMM_WORLD);
         }
         
-    } while (actives > 1);
+    } while (slave_id > 1);
 
     printf("Total Wtime: %f\n", MPI_Wtime() - start_wtime);
     //write_pgm_image(image, I_max, N_x, N_y, "mandelbrot_set_parallel.pgm");
@@ -244,7 +247,7 @@ void slave()
 
     MPI_Recv(&row_offset, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
     printf("Slave %d column_offset: %d received\n", pid, row_offset);
-    if(stat.MPI_TAG == DATA)
+    /*if(stat.MPI_TAG == DATA)
     {
         result = (unsigned int*) realloc(result, (job_size) * sizeof(unsigned int));
     }
@@ -257,7 +260,7 @@ void slave()
     {
         printf("Malloc error in slave %d\n", pid);
     }
-    
+    */
     while (stat.MPI_TAG != TERMINATE) 
     {
         unsigned int temp_job_height = stat.MPI_TAG == DATA ? job_height : job_remainder; 
@@ -307,7 +310,7 @@ void init_MPI_env(int argc, char** argv)
     int mpi_provided_thread_level;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED,
                      &mpi_provided_thread_level);
-    if ( mpi_provided_thread_level < MPI_THREAD_FUNNELED) 
+    if (mpi_provided_thread_level < MPI_THREAD_FUNNELED) 
     {
         printf("a problem arise when asking for MPI_THREAD_FUNNELED level\n");
         MPI_Finalize();
@@ -322,17 +325,20 @@ void init_MPI_env(int argc, char** argv)
         MPI_Status file_stat;
         printf("opening file\n");
        
-        
+        MPI_File_open(MPI_COMM_SELF, "mandelbrot_set_parallel.pgm",
+                      MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &output_file);
+
+        /*
         FILE* image_file;
         image_file = fopen("mandelbrot_set_parallel.pgm", "w");
         int color_depth = 1+((I_max >>8)>0);       // 1 if maxval < 256, 2 otherwise
 
         fprintf(image_file, "P5\n%d %d\n%d\n", N_x, N_y, I_max);
         fclose(image_file);
-        
+        */
     }
-    MPI_File_open(MPI_COMM_WORLD, "mandelbrot_set_parallel.pgm",
-                  MPI_MODE_WRONLY, MPI_INFO_NULL, &output_file);
+    //MPI_File_open(MPI_COMM_WORLD, "mandelbrot_set_parallel.pgm",
+    //              MPI_MODE_WRONLY, MPI_INFO_NULL, &output_file);
     //MPI_File_seek(output_file, 0, MPI_SEEK_END);
     job_height = world_size == 1 ? N_y : 20;
     if (world_size > 1) {
