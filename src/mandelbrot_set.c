@@ -40,6 +40,8 @@ unsigned int I_max, N_x, N_y, job_height, job_remainder, job_remainder_size, job
 int pid, world_size;
 double x_L, x_R, y_L, y_R;
 double d_x, d_y;
+MPI_File output_file;
+MPI_Status file_stat;
 
 struct complex
 {
@@ -126,14 +128,10 @@ void write_pgm_image(void *image, unsigned int maxval,
  * result is a pointer to an array of fixed length which first element
  * will contain the before mentioned start and the elements computed
  */
-void _worker(unsigned int start, unsigned int* buffer, unsigned int work_amount)
+void _worker(unsigned int start, unsigned int work_amount)
 {
     struct complex c;
-    //MPI_File output_file;
-    //MPI_Status file_stat;
-    //MPI_File_open(MPI_COMM_WORLD, "mandelbrot_set_parallel.pgm",
-    //              MPI_MODE_WRONLY, MPI_INFO_NULL, &output_file);
-    *buffer = start;
+    unsigned int* buffer = (unsigned int*) malloc(work_amount * N_x * sizeof(unsigned int));
     printf("Slave %d in _worker; start: %u; work_amount: %u\n", pid, start, work_amount);
     #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic, 10) private(c) collapse(2)
@@ -142,15 +140,22 @@ void _worker(unsigned int start, unsigned int* buffer, unsigned int work_amount)
         for(unsigned int j = 0; j < N_x; j++) {
             c.imag = y_L + (i + start) * d_y;
             c.real = x_L + j * d_x;
-            *(buffer + (i * N_x + j + 1)) = compute_pixel(c, I_max);
-            
+            *(buffer + (i * N_x + j)) = compute_pixel(c, I_max);
             //printf("Slave: %d; result[%u] = %u\n", pid, i*work_amount+j+1, *(result + (j*work_amount+i+1)));
         }
     }
 
     //if I use this it get stuck
-    //MPI_File_write_at(output_file, start, result + 1, N_y * work_amount, MPI_UNSIGNED, &file_stat);
-    //MPI_File_close(&output_file);
+    //MPI_File_seek_shared(output_file, 0, MPI_SEEK_END);
+    MPI_File_write_at(output_file, start * N_x, buffer,
+                      N_y * work_amount, MPI_UNSIGNED, &file_stat);
+    if (world_size == 1)
+    {
+        write_pgm_image(buffer, I_max, N_x, N_y, "mandelbrot_set_parallel.pgm");
+    }
+    
+    
+    free(buffer);
 }
 
 /**
@@ -160,8 +165,8 @@ void _worker(unsigned int start, unsigned int* buffer, unsigned int work_amount)
 void master()
 {
     if (world_size == 1) {
-        _worker(MASTER, image, N_y);
-        write_pgm_image(image, I_max, N_x, N_y, "mandelbrot_set_parallel.pgm");
+        _worker(MASTER, N_y);
+        //write_pgm_image(image, I_max, N_x, N_y, "mandelbrot_set_parallel.pgm");
         return;
     }
     unsigned int iterat, start;
@@ -180,25 +185,27 @@ void master()
 
     do {
         
-        result = (unsigned int*) realloc(result, (job_size + 1) * sizeof(unsigned int));
+        //result = (unsigned int*) realloc(result, (job_size + 1) * sizeof(unsigned int));
 
-        if (result == NULL) 
-        {
-            printf("Not able to allocate result on MASTER\n");
-            exit(1);
-        }
-        MPI_Recv(result, job_size+1, MPI_UNSIGNED, MPI_ANY_SOURCE,
+        //if (result == NULL) 
+        //{
+        //    printf("Not able to allocate result on MASTER\n");
+        //    exit(1);
+        //}
+        //MPI_Recv(result, job_size+1, MPI_UNSIGNED, MPI_ANY_SOURCE,
+        //         MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
+        short done;
+        MPI_Recv(&done, 1, MPI_SHORT, MPI_ANY_SOURCE,
                  MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
-        
-        iterat = stat.MPI_TAG == DATA ? job_size : job_remainder_size;
+        //iterat = stat.MPI_TAG == DATA ? job_size : job_remainder_size;
         
         int slave = stat.MPI_SOURCE;
-        start = *result;
+        //start = *result;
 
-        unsigned int temp = start + iterat;
-        for(int i = 1; start < temp; i++, start++) {
-            *(image + start) = *(result + i);
-        }
+        //unsigned int temp = start + iterat;
+        //for(int i = 1; start < temp; i++, start++) {
+        //    *(image + start) = *(result + i);
+        //}
         
         actives--;
         if (jobs < N_y) { 
@@ -221,7 +228,7 @@ void master()
     } while (actives > 1);
 
     printf("Total Wtime: %f\n", MPI_Wtime() - start_wtime);
-    write_pgm_image(image, I_max, N_x, N_y, "mandelbrot_set_parallel.pgm");
+    //write_pgm_image(image, I_max, N_x, N_y, "mandelbrot_set_parallel.pgm");
 }
 
 /**
@@ -239,11 +246,11 @@ void slave()
     printf("Slave %d column_offset: %d received\n", pid, row_offset);
     if(stat.MPI_TAG == DATA)
     {
-        result = (unsigned int*) realloc(result, (job_size + 1) * sizeof(unsigned int));
+        result = (unsigned int*) realloc(result, (job_size) * sizeof(unsigned int));
     }
     else if(stat.MPI_TAG == REMAINDER)
     {
-        result = (unsigned int*) realloc(result, (job_remainder_size + 1) * sizeof(unsigned int));
+        result = (unsigned int*) realloc(result, (job_remainder_size) * sizeof(unsigned int));
     }
 
     if (result == NULL)
@@ -256,9 +263,11 @@ void slave()
         unsigned int temp_job_height = stat.MPI_TAG == DATA ? job_height : job_remainder; 
         printf("Slave: %d; issung _worker with col_off: %u; job_width: %u\n",
                 pid, row_offset, temp_job_height);
-        _worker(row_offset, result, temp_job_height);
+        _worker(row_offset, temp_job_height);
         printf("_worker in slave %d has finished, now sending\n", pid);
-        MPI_Send(result, job_size+1, MPI_UNSIGNED, MASTER, stat.MPI_TAG, MPI_COMM_WORLD);
+        short done = 1;
+        MPI_Send(&done, 1, MPI_SHORT, MASTER, stat.MPI_TAG, MPI_COMM_WORLD);
+        //MPI_Send(result, job_size+1, MPI_UNSIGNED, MASTER, stat.MPI_TAG, MPI_COMM_WORLD);
         //free(result);
         MPI_Recv(&row_offset, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
         if (stat.MPI_TAG == TERMINATE) 
@@ -271,7 +280,7 @@ void slave()
 /**
  * Initialise enviroment
  */
-void initial_env(int argc, char** argv) 
+void init_env(int argc, char** argv) 
 {
     N_x = atoi(argv[1]), N_y = atoi(argv[2]);
     x_L = atof(argv[3]), y_L = atof(argv[4]);
@@ -293,7 +302,7 @@ void initial_env(int argc, char** argv)
 /**
  * Initialise MPI environment
  */
-void initial_MPI_env(int argc, char** argv)
+void init_MPI_env(int argc, char** argv)
 {
     int mpi_provided_thread_level;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED,
@@ -307,19 +316,24 @@ void initial_MPI_env(int argc, char** argv)
     //MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &pid);
-   
+
     if(pid == MASTER) {
-        image = (unsigned int*) malloc(N_y * N_x * sizeof(unsigned int));
+        //image = (unsigned int*) malloc(N_y * N_x * sizeof(unsigned int));
+        MPI_Status file_stat;
+        printf("opening file\n");
+       
         
-        /*FILE* image_file;
+        FILE* image_file;
         image_file = fopen("mandelbrot_set_parallel.pgm", "w");
         int color_depth = 1+((I_max >>8)>0);       // 1 if maxval < 256, 2 otherwise
 
         fprintf(image_file, "P5\n%d %d\n%d\n", N_x, N_y, I_max);
         fclose(image_file);
-        */
+        
     }
-    
+    MPI_File_open(MPI_COMM_WORLD, "mandelbrot_set_parallel.pgm",
+                  MPI_MODE_WRONLY, MPI_INFO_NULL, &output_file);
+    //MPI_File_seek(output_file, 0, MPI_SEEK_END);
     job_height = world_size == 1 ? N_y : 20;
     if (world_size > 1) {
         job_remainder = (N_y % 20);
@@ -330,11 +344,11 @@ void initial_MPI_env(int argc, char** argv)
 }
 
 int main(int argc, char** argv) {
-    initial_env(argc, argv);
-    initial_MPI_env(argc, argv);
+    init_env(argc, argv);
+    init_MPI_env(argc, argv);
 
     pid == MASTER ? master() : slave();
-    
+    MPI_File_close(&output_file);
     printf("Process %d is terminating..\n", pid);
     MPI_Finalize();
     return 0;
