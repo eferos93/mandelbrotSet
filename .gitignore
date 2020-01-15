@@ -1,3 +1,5 @@
 *.x*
 Assignment03.*
 *.pdf
+*.o
+*.pgm
