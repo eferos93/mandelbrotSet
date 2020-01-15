@@ -55,8 +55,8 @@ int main(int argc, char** argv) {
     image = (unsigned int*) malloc(N_x * N_y * sizeof(unsigned int));
     double start = CPU_TIME;
     _worker(image);
-    printf("Total time: %f", CPU_TIME - start);
     write_pgm_image(image, I_max, N_x, N_y, "mandelbrot_set.pgm");
+    printf("Total time: %f", CPU_TIME - start);
     return 0;
 }
 
@@ -120,12 +120,12 @@ unsigned int compute_pixel(struct complex c, unsigned int max_iter)
     z.imag = 0.0;
     double temp;
 
-    while ((z.real * z.real + z.imag * z.imag < 4.0) && (count < max_iter)) {
+    do 
+    {
         temp = z.real * z.real - z.imag * z.imag + c.real;
         z.imag = 2.0 * z.real * z.imag + c.imag;
         z.real = temp;
-        count++;
-    }
+    }while ((z.real * z.real + z.imag * z.imag < 4.0) && (count++ < max_iter));
 
     return count;
 }

@@ -6,4 +6,4 @@ mandelbrot_set_serial.x:  mandelbrot_set_serial.c
 	gcc $< -o $@
 
 clean:
-	rm -f mandelbrot_set.x mandelbrot_set_serial.x
+	rm -f *.x *.o
