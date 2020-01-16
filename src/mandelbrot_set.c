@@ -79,9 +79,12 @@ int main(int argc, char** argv) {
         }
         #ifdef LOAD_BALANCE
             timer_threads = (double**) malloc(sizeof(double*) * world_size);
-            for (int i = 0; i < world_size; i++)
             {
-                *(timer_threads + i) = (double*) malloc(sizeof(double) * nthreads);
+                int i;
+                for (i = 0; i < world_size; i++)
+                {
+                    *(timer_threads + i) = (double*) malloc(sizeof(double) * nthreads);
+                }
             }
         #endif
         starting_time = omp_get_wtime();
@@ -95,10 +98,12 @@ int main(int argc, char** argv) {
 
     #if defined(_OPENMP) && defined(LOAD_BALANCE)
         printf("Process %d; WTime: %f\n", pid, omp_get_wtime() - starting_time);
-        for (int i = 0; i < nthreads; i++)
         {
-            printf("PID: %d thread %d time %f\n", pid, i, timer_threads[pid][i]);
-        }
+            int i;
+            for (i = 0; i < nthreads; i++)
+            {
+                printf("PID: %d thread %d time %f\n", pid, i, timer_threads[pid][i]);
+            }
         
     #else
         printf("Process %d; WTime: %f\n", pid, MPI_Wtime() - starting_time);
