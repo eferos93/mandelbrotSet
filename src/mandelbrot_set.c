@@ -38,9 +38,11 @@
 #define REMAINDER 3
 #define MASTER 0
 #define FIXED_HEIGHT 20
-//uncomment this to check the THREADS load balancing
-//#define LOAD_BALANCE
 
+//THREADS load balancing times
+#ifdef _OPENMP
+    #define LOAD_BALANCE
+#endif
 unsigned int I_max, N_x, N_y, job_height, job_remainder, job_remainder_size, job_size, header_size;
 int pid, world_size, nthreads;
 double x_L, x_R, y_L, y_R;
@@ -73,13 +75,7 @@ int main(int argc, char** argv) {
             if (world_size == 1)
                 printf("\n\nOMP EXECUTION WITH %d threads\n", nthreads);
             else
-                printf("\n\nMPI+OMP EXECTION WITH %d prcesses and %d threads\n", world_size, nthreads);
-        }
-        #pragma omp parallel
-        {
-            int me = omp_get_thread_num();
-            #pragma omp critical
-                printf("pid: %d; thread %2d is running on core %2d\n", pid, me, get_cpu_id() );    
+                printf("\n\nMPI+OMP EXECTION WITH %d prcesses and %d threads", world_size, nthreads);
         }
         #ifdef LOAD_BALANCE
             timer_threads = (double**) malloc(sizeof(double*) * world_size);
@@ -139,6 +135,7 @@ void init_env(int argc, char** argv)
  */
 void init_MPI_env(int argc, char** argv)
 {
+    #ifdef _OPENMP
     int mpi_provided_thread_level;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED,
                      &mpi_provided_thread_level);
@@ -148,6 +145,9 @@ void init_MPI_env(int argc, char** argv)
         MPI_Finalize();
         exit( 1 );
     }
+    #else
+    MPI_Init(&argc, &argv);
+    #endif
 
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &pid);
