@@ -251,12 +251,12 @@ void _worker(unsigned int start, unsigned int work_amount)
 {
     struct complex c;
     unsigned int* buffer = (unsigned int*) malloc(work_amount * N_x * sizeof(unsigned int));
-    
+    unsigned int i, j;
     #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic, 10) private(c) collapse(2)
     #endif
-    for(unsigned int i = 0; i < work_amount; i++) {
-        for(unsigned int j = 0; j < N_x; j++) {
+    for(i = 0; i < work_amount; i++) {
+        for(j = 0; j < N_x; j++) {
             #if defined(_OPENMP) && defined(LOAD_BALANCE)
                 double s = omp_get_wtime();
             #endif
