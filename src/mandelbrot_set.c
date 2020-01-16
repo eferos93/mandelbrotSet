@@ -37,8 +37,9 @@
 #define TERMINATE 2
 #define REMAINDER 3
 #define MASTER 0
-//uncomment this to check the load balancing of the threads
-#define LOAD_BALANCE
+#define FIXED_HEIGHT 20
+//uncomment this to check the THREADS load balancing
+//#define LOAD_BALANCE
 
 unsigned int I_max, N_x, N_y, job_height, job_remainder, job_remainder_size, job_size, header_size;
 int pid, world_size, nthreads;
@@ -66,16 +67,16 @@ int main(int argc, char** argv) {
     init_env(argc, argv);
     init_MPI_env(argc, argv);
     #ifdef _OPENMP
+        if(pid==MASTER) 
+        {
+            nthreads = omp_get_num_threads();
+            printf("\n\nMPI+OMP EXECTION WITH %d prcesses and %d threads\n", world_size, nthreads);
+        }
         #pragma omp parallel
         {
-            #pragma omp master
-            {
-                nthreads = omp_get_num_threads();
-                printf("omp with %d threads\n", nthreads );
-            }
             int me = omp_get_thread_num();
             #pragma omp critical
-                printf("thread %2d is running on core %2d\n", me, get_cpu_id() );    
+                printf("pid: %d; thread %2d is running on core %2d\n", pid, me, get_cpu_id() );    
         }
         #ifdef LOAD_BALANCE
             timer_threads = (double**) malloc(sizeof(double*) * world_size);
@@ -86,6 +87,7 @@ int main(int argc, char** argv) {
         #endif
         starting_time = omp_get_wtime();
     #else
+        printf("\n\nMPI EXECUTION with %d processes\n", world_size);
         starting_time = MPI_Wtime();
     #endif
 
@@ -114,6 +116,11 @@ void init_env(int argc, char** argv)
 {
     // resolution
     N_x = atoi(argv[1]), N_y = atoi(argv[2]);
+    if(N_x < 250 || N_y < 250)
+    {
+        printf("N_x and N_y must be at least 250\nexiting..");
+        exit(0);
+    }
     //area
     x_L = atof(argv[3]), y_L = atof(argv[4]);
     x_R = atof(argv[5]), y_R = atof(argv[6]);
@@ -146,9 +153,9 @@ void init_MPI_env(int argc, char** argv)
     sprintf(header, "P5\n%d %d\n%d\n", N_x, N_y, I_max);
     header_size = strlen(header);
 
-    job_height = world_size == 1 ? N_y : 20;
-    if (world_size > 1) {
-        job_remainder = (N_y % 20);
+    job_height = world_size > 2 ? FIXED_HEIGHT : N_y;
+    if (world_size > 2) {
+        job_remainder = (N_y % job_height);
         job_remainder_size = job_remainder * N_x;
     }
     job_size = job_height * N_x;

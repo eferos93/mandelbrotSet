@@ -1,24 +1,35 @@
 MPI version
+2 cores
 Process 0; WTime: 7597.042059
 Process 1; WTime: 7597.042343
+
+3 cores
 Process 2; WTime: 3754.448673
 Process 0; WTime: 3754.456144
 Process 1; WTime: 3754.458471
+
+4 cores
 Process 1; WTime: 2534.930359
 Process 3; WTime: 2534.931964
 Process 0; WTime: 2534.932830
 Process 2; WTime: 2534.935103
+
+5 cores
 Process 4; WTime: 1928.931347
 Process 2; WTime: 1928.933365
 Process 1; WTime: 1928.935804
 Process 0; WTime: 1928.936727
 Process 3; WTime: 1928.944858
+
+6 cores
 Process 2; WTime: 1568.005647
 Process 1; WTime: 1568.010457
 Process 5; WTime: 1568.010440
 Process 4; WTime: 1568.013263
 Process 0; WTime: 1568.014175
 Process 3; WTime: 1568.016991
+
+7 cores
 Process 4; WTime: 1322.189041
 Process 6; WTime: 1322.189115
 Process 2; WTime: 1322.196615
@@ -26,6 +37,8 @@ Process 5; WTime: 1322.199016
 Process 1; WTime: 1322.200958
 Process 0; WTime: 1322.201464
 Process 3; WTime: 1322.204175
+
+8 cores
 Process 5; WTime: 1151.109349
 Process 3; WTime: 1151.110987
 Process 6; WTime: 1151.114945
@@ -34,6 +47,8 @@ Process 1; WTime: 1151.118169
 Process 4; WTime: 1151.120934
 Process 0; WTime: 1151.121709
 Process 2; WTime: 1151.122058
+
+9 cores
 Process 5; WTime: 1025.181690
 Process 2; WTime: 1025.182740
 Process 4; WTime: 1025.196583
@@ -43,6 +58,8 @@ Process 8; WTime: 1025.200961
 Process 6; WTime: 1025.205548
 Process 0; WTime: 1025.208325
 Process 7; WTime: 1025.211027
+
+10 cores
 Process 8; WTime: 926.510950
 Process 9; WTime: 926.513663
 Process 7; WTime: 926.514275
@@ -53,6 +70,8 @@ Process 4; WTime: 926.524579
 Process 6; WTime: 926.527655
 Process 0; WTime: 926.527579
 Process 3; WTime: 926.529812
+
+11 cores
 Process 1; WTime: 1490.016948
 Process 6; WTime: 1490.016939
 Process 2; WTime: 1490.016851
@@ -64,6 +83,8 @@ Process 10; WTime: 1490.046610
 Process 8; WTime: 1490.046352
 Process 0; WTime: 1490.049370
 Process 4; WTime: 1490.057524
+
+12 cores
 Process 2; WTime: 1559.485229
 Process 10; WTime: 1559.501568
 Process 11; WTime: 1559.498155
@@ -76,6 +97,8 @@ Process 8; WTime: 1559.548537
 Process 9; WTime: 1559.564342
 Process 0; WTime: 1559.568052
 Process 3; WTime: 1559.571022
+
+13 cores
 Process 5; WTime: 1425.263683
 Process 3; WTime: 1425.278004
 Process 7; WTime: 1425.274082
@@ -89,6 +112,8 @@ Process 2; WTime: 1425.345924
 Process 11; WTime: 1425.350332
 Process 0; WTime: 1425.369255
 Process 4; WTime: 1425.371137
+
+14 cores
 Process 12; WTime: 1320.729453
 Process 4; WTime: 1320.777414
 Process 10; WTime: 1320.779006
@@ -103,6 +128,8 @@ Process 11; WTime: 1320.837024
 Process 0; WTime: 1320.848990
 Process 2; WTime: 1320.851478
 Process 7; WTime: 1320.851635
+
+15 cores
 Process 11; WTime: 1223.868524
 Process 4; WTime: 1223.864150
 Process 14; WTime: 1223.870012
@@ -118,6 +145,8 @@ Process 13; WTime: 1224.710423
 Process 8; WTime: 1225.624876
 Process 0; WTime: 1225.710280
 Process 2; WTime: 1225.721887
+ 
+ 16 cores
 Process 12; WTime: 1137.736196
 Process 2; WTime: 1137.733682
 Process 6; WTime: 1137.733572
@@ -134,6 +163,8 @@ Process 15; WTime: 1138.530039
 Process 14; WTime: 1138.786165
 Process 0; WTime: 1138.824864
 Process 7; WTime: 1138.832240
+
+17 cores
 cn01-22.6845ipath_userinit: Mismatched user minor version (12) and driver minor version (13) while context sharing. Ensure that driver and library are from the same release.
 cn01-22.6871ipath_userinit: Mismatched user minor version (12) and driver minor version (13) while context sharing. Ensure that driver and library are from the same release.
 Process 1; WTime: 1075.618169
@@ -153,6 +184,8 @@ Process 15; WTime: 1075.685716
 Process 8; WTime: 1075.699618
 Process 0; WTime: 1075.729747
 Process 16; WTime: 1075.734086
+
+18 cores
 cn01-22.7045ipath_userinit: Mismatched user minor version (12) and driver minor version (13) while context sharing. Ensure that driver and library are from the same release.
 cn01-22.7044ipath_userinit: Mismatched user minor version (12) and driver minor version (13) while context sharing. Ensure that driver and library are from the same release.
 cn01-22.7069ipath_userinit: Mismatched user minor version (12) and driver minor version (13) while context sharing. Ensure that driver and library are from the same release.
@@ -175,6 +208,8 @@ Process 2; WTime: 1011.104758
 Process 16; WTime: 1011.104509
 Process 0; WTime: 1011.109950
 Process 14; WTime: 1011.108937
+
+19 cores
 cn01-22.7244ipath_userinit: Mismatched user minor version (12) and driver minor version (13) while context sharing. Ensure that driver and library are from the same release.
 cn01-22.7242ipath_userinit: Mismatched user minor version (12) and driver minor version (13) while context sharing. Ensure that driver and library are from the same release.
 cn01-22.7243ipath_userinit: Mismatched user minor version (12) and driver minor version (13) while context sharing. Ensure that driver and library are from the same release.
@@ -200,6 +235,8 @@ Process 4; WTime: 901.304636
 Process 11; WTime: 901.300771
 Process 0; WTime: 901.341062
 Process 15; WTime: 901.335867
+
+20 cores
 cn01-22.7567ipath_userinit: Mismatched user minor version (12) and driver minor version (13) while context sharing. Ensure that driver and library are from the same release.
 cn01-22.7568ipath_userinit: Mismatched user minor version (12) and driver minor version (13) while context sharing. Ensure that driver and library are from the same release.
 cn01-22.7569ipath_userinit: Mismatched user minor version (12) and driver minor version (13) while context sharing. Ensure that driver and library are from the same release.
