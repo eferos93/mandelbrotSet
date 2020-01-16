@@ -70,7 +70,10 @@ int main(int argc, char** argv) {
         if(pid==MASTER) 
         {
             nthreads = omp_get_num_threads();
-            printf("\n\nMPI+OMP EXECTION WITH %d prcesses and %d threads\n", world_size, nthreads);
+            if (world_size == 1)
+                printf("\n\nOMP EXECUTION WITH %d threads\n", nthreads);
+            else
+                printf("\n\nMPI+OMP EXECTION WITH %d prcesses and %d threads\n", world_size, nthreads);
         }
         #pragma omp parallel
         {
