@@ -134,11 +134,11 @@ unsigned int compute_pixel(struct complex c, unsigned int max_iter)
 void _worker(unsigned int* buffer)
 {
     struct complex c;
-
-    for (int i = 0; i < N_y; i++)
+    unsigned int i, j;
+    for (i = 0; i < N_y; i++)
     {
         c.imag = y_L + i * d_y;
-        for (int j = 0; j < N_x; j++)
+        for (j = 0; j < N_x; j++)
         {
             c.real = x_L + j * d_x;
             *(buffer + (i * N_x + j)) = compute_pixel(c, I_max);

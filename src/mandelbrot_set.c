@@ -38,7 +38,7 @@
 #define REMAINDER 3
 #define MASTER 0
 //uncomment this to check the load balancing of the threads
-//#define LOAD_BALANCE
+#define LOAD_BALANCE
 
 unsigned int I_max, N_x, N_y, job_height, job_remainder, job_remainder_size, job_size, header_size;
 int pid, world_size, nthreads;

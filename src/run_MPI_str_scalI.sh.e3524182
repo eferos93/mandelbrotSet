@@ -1,0 +1,21 @@
+loading dependency gnu/4.9.2
+loading dependency numactl/2.0.10
+loading dependency hwloc/1.10.0
+mandelbrot_set.c: In function 'get_cpu_id':
+mandelbrot_set.c:300:3: warning: implicit declaration of function 'sched_getcpu' [-Wimplicit-function-declaration]
+   return  sched_getcpu( );
+   ^
+mandelbrot_set.c: In function 'read_proc__self_stat':
+mandelbrot_set.c:352:3: warning: implicit declaration of function 'getline' [-Wimplicit-function-declaration]
+   ret = getline( &line, &len, file );
+   ^
+mandelbrot_set.c:359:3: warning: implicit declaration of function 'strtok_r' [-Wimplicit-function-declaration]
+   char *token = strtok_r( line, " ", &savetoken);
+   ^
+mandelbrot_set.c:359:17: warning: initialization makes pointer from integer without a cast
+   char *token = strtok_r( line, " ", &savetoken);
+                 ^
+mandelbrot_set.c:361:14: warning: assignment makes pointer from integer without a cast
+   do { token = strtok_r( NULL, " ", &savetoken); field--; } while( field );
+              ^
+/var/spool/torque/mom_priv/jobs/3524182.master1.SC: line 6: ECHO: command not found

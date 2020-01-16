@@ -1,0 +1,3 @@
+SERIAL
+N_x: 20000; N_y: 20000; x_L: -2.000000; y_L: -2.000000; x_R: 3.000000; y_R: 5.500000; I_max: 65535; d_x: 0.000250; d_y: 0.000375;Total time: 7363.722487cn07-04 : flushing filesystem cache...
+cn07-04 : filesystem cache flushed
