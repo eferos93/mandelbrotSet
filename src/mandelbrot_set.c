@@ -71,13 +71,15 @@ int main(int argc, char** argv) {
     init_env(argc, argv);
     init_MPI_env(argc, argv);
     #ifdef _OPENMP
-        if(pid==MASTER) 
+        #pragma omp parallel
+        #pragma omp single
+        nthreads = omp_get_num_threads();
+        if(pid == MASTER) 
         {
-            nthreads = omp_get_num_threads();
             if (world_size == 1)
                 printf("\n\nOMP EXECUTION WITH %d threads\n", nthreads);
             else
-                printf("\n\nMPI+OMP EXECTION WITH %d prcesses and %d threads\n", world_size, nthreads);
+                printf("\n\nMPI+OMP EXECUTION WITH %d prcesses and %d threads\n", world_size, nthreads);
         }
         #ifdef LOAD_BALANCE
             timer_threads = (double**) malloc(sizeof(double*) * world_size);
@@ -158,11 +160,7 @@ void init_MPI_env(int argc, char** argv)
 
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &pid);
-    if(pid == MASTER)
-    {
-        printf("N_x: %u; N_y: %u; x_L: %f; x_R: %f;\n y_L: %f: y_R: %f; I_max: %hu; d_x: %f; d_y: %f\n",
-                N_x, N_y, x_L, x_R, y_L, y_R, I_max, d_x, d_y);
-    }
+
     //header for the pgm file
     header = (char*) malloc(50 * sizeof(char));
     sprintf(header, "P5\n%d %d\n%d\n", N_x, N_y, I_max);

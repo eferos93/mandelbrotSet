@@ -32,7 +32,8 @@
 	                  (double)ts.tv_nsec * 1e-9)
 
 struct timespec ts;
-unsigned int N_x, N_y, I_max, *image;
+unsigned int N_x, N_y;
+unsigned short I_max, *image;
 double x_L, x_R, y_L, y_R;
 double d_x, d_y;
 
@@ -45,16 +46,16 @@ struct complex
 void write_pgm_image(void *image, unsigned int maxval,
                      unsigned int xsize, unsigned int ysize, const char *image_name);
 
-unsigned int compute_pixel(struct complex c, unsigned int max_iter);
-void _worker(unsigned int* result);
-void initial_env(int argc, char** argv);
+unsigned short compute_pixel(struct complex c, unsigned short max_iter);
+void compute_mandelbrot(unsigned short* result);
+void init_env(int argc, char** argv);
 
 
 int main(int argc, char** argv) {
-    initial_env(argc, argv);
-    image = (unsigned int*) malloc(N_x * N_y * sizeof(unsigned int));
+    init_env(argc, argv);
+    image = (unsigned short*) malloc(N_x * N_y * sizeof(unsigned short));
     double start = CPU_TIME;
-    _worker(image);
+    compute_mandelbrot(image);
     write_pgm_image(image, I_max, N_x, N_y, "mandelbrot_set.pgm");
     printf("Total time: %f", CPU_TIME - start);
     return 0;
@@ -112,9 +113,9 @@ void write_pgm_image(void *image, unsigned int maxval,
  * computes if c belongs to the Mandelbrot Set and returns
  * the counter used in the loop 
  */
-unsigned int compute_pixel(struct complex c, unsigned int max_iter) 
+unsigned short compute_pixel(struct complex c, unsigned short max_iter) 
 {
-    unsigned int count=0;
+    unsigned short count=0;
     struct complex z;
     z.real = 0.0;
     z.imag = 0.0;
@@ -131,7 +132,7 @@ unsigned int compute_pixel(struct complex c, unsigned int max_iter)
 }
 
 
-void _worker(unsigned int* buffer)
+void compute_mandelbrot(unsigned short* buffer)
 {
     struct complex c;
     unsigned int i, j;
@@ -151,7 +152,7 @@ void _worker(unsigned int* buffer)
 /**
  * Initialise enviroment
  */
-void initial_env(int argc, char** argv) 
+void init_env(int argc, char** argv) 
 {
     N_x = atoi(argv[1]), N_y = atoi(argv[2]);
     x_L = atof(argv[3]), y_L = atof(argv[4]);
