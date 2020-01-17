@@ -62,7 +62,7 @@ void init_env(int argc, char** argv);
 void init_MPI_env(int argc, char** argv);
 void master();
 void slave();
-void _worker(unsigned int start, unsigned int work_amount);
+void compute_mandelbrot(unsigned int row_offset, unsigned int work_amount);
 unsigned int compute_pixel(struct complex c, unsigned int max_iter); 
 
 int main(int argc, char** argv) {
@@ -188,7 +188,7 @@ void master()
                   MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &output_file);
     if (world_size == 1) 
     {
-        _worker(MASTER, N_y);
+        compute_mandelbrot(MASTER, N_y);
         return;
     }
 
@@ -250,7 +250,7 @@ void slave()
     while (stat.MPI_TAG != TERMINATE) 
     {
         unsigned int temp_job_height = stat.MPI_TAG == DATA ? job_height : job_remainder; 
-        _worker(row_offset, temp_job_height);
+        compute_mandelbrot(row_offset, temp_job_height);
         short done = 1;
         MPI_Send(&done, 1, MPI_SHORT, MASTER, stat.MPI_TAG, MPI_COMM_WORLD);
         MPI_Recv(&row_offset, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
@@ -258,11 +258,11 @@ void slave()
 }
 
 /**
- * methods representing the work to be carried out by a slave
- * start represent the starting index from which the elements computed
- * will be placed in the final array of pixels
+ * method that compute and write the mandelbrot set slice.
+ * row_offset represent the from which line of the matrix to start
+ * work_amount indicates how many lines to compute
  */
-void _worker(unsigned int start, unsigned int work_amount)
+void compute_mandelbrot(unsigned int row_offset, unsigned int work_amount)
 {
     struct complex c;
     unsigned int* buffer = (unsigned int*) malloc(work_amount * N_x * sizeof(unsigned int));
@@ -275,7 +275,7 @@ void _worker(unsigned int start, unsigned int work_amount)
             #if defined(_OPENMP) && defined(LOAD_BALANCE)
                 double s = omp_get_wtime();
             #endif
-            c.imag = y_L + (i + start) * d_y;
+            c.imag = y_L + (i + row_offset) * d_y;
             c.real = x_L + j * d_x;
             *(buffer + (i * N_x + j)) = compute_pixel(c, I_max);
             #if defined(_OPENMP) && defined(LOAD_BALANCE)
@@ -285,7 +285,7 @@ void _worker(unsigned int start, unsigned int work_amount)
     }
 
     //write the results using offset
-    MPI_File_write_at(output_file, header_size * sizeof(char) + start * N_x * sizeof(unsigned int), buffer,
+    MPI_File_write_at(output_file, header_size * sizeof(char) + row_offset * N_x * sizeof(unsigned int), buffer,
                       N_y * work_amount, MPI_UNSIGNED, &file_stat);
     free(buffer);
 }
