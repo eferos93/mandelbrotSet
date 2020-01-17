@@ -43,7 +43,8 @@
 #ifdef _OPENMP
     #define LOAD_BALANCE
 #endif
-unsigned int I_max, N_x, N_y, job_height, job_remainder, job_remainder_size, job_size, header_size;
+unsigned short I_max, header_size;
+unsigned int N_x, N_y, job_size, job_height, job_remainder, job_remainder_size;
 int pid, world_size, nthreads;
 double x_L, x_R, y_L, y_R;
 double d_x, d_y;
@@ -58,12 +59,13 @@ struct complex
     double real;
     double imag;
 };
+
 void init_env(int argc, char** argv);
 void init_MPI_env(int argc, char** argv);
 void master();
 void slave();
-void _worker(unsigned int start, unsigned int work_amount);
-unsigned int compute_pixel(struct complex c, unsigned int max_iter); 
+void compute_mandelbrot(unsigned int row_offset, unsigned int work_amount);
+unsigned short compute_pixel(struct complex c, unsigned short max_iter); 
 
 int main(int argc, char** argv) {
     init_env(argc, argv);
@@ -75,7 +77,7 @@ int main(int argc, char** argv) {
             if (world_size == 1)
                 printf("\n\nOMP EXECUTION WITH %d threads\n", nthreads);
             else
-                printf("\n\nMPI+OMP EXECTION WITH %d prcesses and %d threads", world_size, nthreads);
+                printf("\n\nMPI+OMP EXECTION WITH %d prcesses and %d threads\n", world_size, nthreads);
         }
         #ifdef LOAD_BALANCE
             timer_threads = (double**) malloc(sizeof(double*) * world_size);
@@ -156,8 +158,13 @@ void init_MPI_env(int argc, char** argv)
 
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &pid);
+    if(pid == MASTER)
+    {
+        printf("N_x: %u; N_y: %u; x_L: %f; x_R: %f;\n y_L: %f: y_R: %f; I_max: %hu; d_x: %f; d_y: %f\n",
+                N_x, N_y, x_L, x_R, y_L, y_R, I_max, d_x, d_y);
+    }
     //header for the pgm file
-    header = (char*) malloc(50*sizeof(char));
+    header = (char*) malloc(50 * sizeof(char));
     sprintf(header, "P5\n%d %d\n%d\n", N_x, N_y, I_max);
     header_size = strlen(header);
 
@@ -188,13 +195,13 @@ void master()
                   MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &output_file);
     if (world_size == 1) 
     {
-        _worker(MASTER, N_y);
+        compute_mandelbrot(MASTER, N_y);
         return;
     }
 
-    unsigned int start;
-    unsigned int working_slaves = 1, row_offset = 0;
-    int tag;
+    unsigned short working_slaves = 1;
+    unsigned int row_offset = 0;
+    unsigned short tag;
 
     //distribute the first world_size-1 jobs
     for (; working_slaves < world_size && row_offset < N_x; working_slaves++, row_offset += job_height) 
@@ -250,7 +257,7 @@ void slave()
     while (stat.MPI_TAG != TERMINATE) 
     {
         unsigned int temp_job_height = stat.MPI_TAG == DATA ? job_height : job_remainder; 
-        _worker(row_offset, temp_job_height);
+        compute_mandelbrot(row_offset, temp_job_height);
         short done = 1;
         MPI_Send(&done, 1, MPI_SHORT, MASTER, stat.MPI_TAG, MPI_COMM_WORLD);
         MPI_Recv(&row_offset, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
@@ -258,14 +265,14 @@ void slave()
 }
 
 /**
- * methods representing the work to be carried out by a slave
- * start represent the starting index from which the elements computed
- * will be placed in the final array of pixels
+ * method that compute and write the mandelbrot set slice.
+ * row_offset represent the from which line of the matrix to start
+ * work_amount indicates how many lines to compute
  */
-void _worker(unsigned int start, unsigned int work_amount)
+void compute_mandelbrot(unsigned int row_offset, unsigned int work_amount)
 {
     struct complex c;
-    unsigned int* buffer = (unsigned int*) malloc(work_amount * N_x * sizeof(unsigned int));
+    unsigned short* buffer = (unsigned short*) malloc(work_amount * N_x * sizeof(unsigned short));
     unsigned int i, j;
     #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic, 10) private(c) collapse(2)
@@ -275,7 +282,7 @@ void _worker(unsigned int start, unsigned int work_amount)
             #if defined(_OPENMP) && defined(LOAD_BALANCE)
                 double s = omp_get_wtime();
             #endif
-            c.imag = y_L + (i + start) * d_y;
+            c.imag = y_L + (i + row_offset) * d_y;
             c.real = x_L + j * d_x;
             *(buffer + (i * N_x + j)) = compute_pixel(c, I_max);
             #if defined(_OPENMP) && defined(LOAD_BALANCE)
@@ -285,8 +292,8 @@ void _worker(unsigned int start, unsigned int work_amount)
     }
 
     //write the results using offset
-    MPI_File_write_at(output_file, header_size * sizeof(char) + start * N_x * sizeof(unsigned int), buffer,
-                      N_y * work_amount, MPI_UNSIGNED, &file_stat);
+    MPI_File_write_at(output_file, header_size * sizeof(char) + row_offset * N_x * sizeof(unsigned short), buffer,
+                      N_y * work_amount, MPI_UNSIGNED_SHORT, &file_stat);
     free(buffer);
 }
 
@@ -296,9 +303,9 @@ void _worker(unsigned int start, unsigned int work_amount)
  * computes if c belongs to the Mandelbrot Set and returns
  * the counter used in the loop 
  */
-unsigned int compute_pixel(struct complex c, unsigned int max_iter) 
+unsigned short compute_pixel(struct complex c, unsigned short max_iter) 
 {
-    unsigned int count = 0;
+    unsigned short count = 0;
     struct complex z;
     z.real = 0.0; z.imag = 0.0;
     double temp;
@@ -308,6 +315,8 @@ unsigned int compute_pixel(struct complex c, unsigned int max_iter)
         temp = z.real * z.real - z.imag * z.imag + c.real;
         z.imag = 2 * z.real * z.imag + c.imag;
         z.real = temp;
+        //if(count == 65535)
+        //    printf("PORCODIOOOOOO");
     } while ((z.real * z.real + z.imag * z.imag < 4.0) && (count++ < max_iter));
 
     return count;
