@@ -43,7 +43,8 @@
 #ifdef _OPENMP
     #define LOAD_BALANCE
 #endif
-unsigned int I_max, N_x, N_y, job_height, job_remainder, job_remainder_size, job_size, header_size;
+unsigned short I_max, header_size;
+unsigned int N_x, N_y, job_size, job_height, job_remainder, job_remainder_size;
 int pid, world_size, nthreads;
 double x_L, x_R, y_L, y_R;
 double d_x, d_y;
@@ -58,12 +59,13 @@ struct complex
     double real;
     double imag;
 };
+
 void init_env(int argc, char** argv);
 void init_MPI_env(int argc, char** argv);
 void master();
 void slave();
 void compute_mandelbrot(unsigned int row_offset, unsigned int work_amount);
-unsigned int compute_pixel(struct complex c, unsigned int max_iter); 
+unsigned short compute_pixel(struct complex c, unsigned short max_iter); 
 
 int main(int argc, char** argv) {
     init_env(argc, argv);
@@ -75,7 +77,7 @@ int main(int argc, char** argv) {
             if (world_size == 1)
                 printf("\n\nOMP EXECUTION WITH %d threads\n", nthreads);
             else
-                printf("\n\nMPI+OMP EXECTION WITH %d prcesses and %d threads", world_size, nthreads);
+                printf("\n\nMPI+OMP EXECTION WITH %d prcesses and %d threads\n", world_size, nthreads);
         }
         #ifdef LOAD_BALANCE
             timer_threads = (double**) malloc(sizeof(double*) * world_size);
@@ -156,8 +158,13 @@ void init_MPI_env(int argc, char** argv)
 
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &pid);
+    if(pid == MASTER)
+    {
+        printf("N_x: %u; N_y: %u; x_L: %f; x_R: %f;\n y_L: %f: y_R: %f; I_max: %hu; d_x: %f; d_y: %f\n",
+                N_x, N_y, x_L, x_R, y_L, y_R, I_max, d_x, d_y);
+    }
     //header for the pgm file
-    header = (char*) malloc(50*sizeof(char));
+    header = (char*) malloc(50 * sizeof(char));
     sprintf(header, "P5\n%d %d\n%d\n", N_x, N_y, I_max);
     header_size = strlen(header);
 
@@ -192,9 +199,9 @@ void master()
         return;
     }
 
-    unsigned int start;
-    unsigned int working_slaves = 1, row_offset = 0;
-    int tag;
+    unsigned short working_slaves = 1;
+    unsigned int row_offset = 0;
+    unsigned short tag;
 
     //distribute the first world_size-1 jobs
     for (; working_slaves < world_size && row_offset < N_x; working_slaves++, row_offset += job_height) 
@@ -265,7 +272,7 @@ void slave()
 void compute_mandelbrot(unsigned int row_offset, unsigned int work_amount)
 {
     struct complex c;
-    unsigned int* buffer = (unsigned int*) malloc(work_amount * N_x * sizeof(unsigned int));
+    unsigned short* buffer = (unsigned short*) malloc(work_amount * N_x * sizeof(unsigned short));
     unsigned int i, j;
     #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic, 10) private(c) collapse(2)
@@ -285,8 +292,8 @@ void compute_mandelbrot(unsigned int row_offset, unsigned int work_amount)
     }
 
     //write the results using offset
-    MPI_File_write_at(output_file, header_size * sizeof(char) + row_offset * N_x * sizeof(unsigned int), buffer,
-                      N_y * work_amount, MPI_UNSIGNED, &file_stat);
+    MPI_File_write_at(output_file, header_size * sizeof(char) + row_offset * N_x * sizeof(unsigned short), buffer,
+                      N_y * work_amount, MPI_UNSIGNED_SHORT, &file_stat);
     free(buffer);
 }
 
@@ -296,9 +303,9 @@ void compute_mandelbrot(unsigned int row_offset, unsigned int work_amount)
  * computes if c belongs to the Mandelbrot Set and returns
  * the counter used in the loop 
  */
-unsigned int compute_pixel(struct complex c, unsigned int max_iter) 
+unsigned short compute_pixel(struct complex c, unsigned short max_iter) 
 {
-    unsigned int count = 0;
+    unsigned short count = 0;
     struct complex z;
     z.real = 0.0; z.imag = 0.0;
     double temp;
@@ -308,6 +315,8 @@ unsigned int compute_pixel(struct complex c, unsigned int max_iter)
         temp = z.real * z.real - z.imag * z.imag + c.real;
         z.imag = 2 * z.real * z.imag + c.imag;
         z.real = temp;
+        //if(count == 65535)
+        //    printf("PORCODIOOOOOO");
     } while ((z.real * z.real + z.imag * z.imag < 4.0) && (count++ < max_iter));
 
     return count;
