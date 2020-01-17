@@ -197,9 +197,8 @@ void master()
         return;
     }
 
-    unsigned short working_slaves = 1;
+    unsigned short tag, working_slaves = 1;
     unsigned int row_offset = 0;
-    unsigned short tag;
 
     //distribute the first world_size-1 jobs
     for (; working_slaves < world_size && row_offset < N_x; working_slaves++, row_offset += job_height) 
@@ -208,8 +207,9 @@ void master()
         MPI_Send(&row_offset, 1, MPI_UNSIGNED, working_slaves, tag, MPI_COMM_WORLD);
     }
 
-    //loop in which we assign the remaining jobs to the slaves as they finish the previous assigned
-    //until there are no more jobs to be assigned
+    //loop in which we assign the remaining jobs to the slaves 
+    //as they finish the previous assigned until there are no more
+    //jobs to be assigned
     do 
     {
         short done;
@@ -226,7 +226,7 @@ void master()
             bool check = row_offset + job_height > N_y;
             tag = check ? REMAINDER : DATA;
             MPI_Send(&row_offset, 1, MPI_UNSIGNED, slave, tag, MPI_COMM_WORLD);
-            row_offset += check ? job_remainder : job_height;
+            row_offset += check ? job_remainder : job_height; 
             working_slaves++;
         }
         else 
@@ -240,7 +240,9 @@ void master()
 
 /**
  * method used by slave processes, that will carry out the work and 
- * reply back to the master when done
+ * send an ACK back to the master when done, then waits for a new job
+ * to be assigned. Terminates when it receives an messagge with tag
+ * TERMINATE
  */
 void slave()
 {
@@ -313,8 +315,6 @@ unsigned short compute_pixel(struct complex c, unsigned short max_iter)
         temp = z.real * z.real - z.imag * z.imag + c.real;
         z.imag = 2 * z.real * z.imag + c.imag;
         z.real = temp;
-        //if(count == 65535)
-        //    printf("PORCODIOOOOOO");
     } while ((z.real * z.real + z.imag * z.imag < 4.0) && (count++ < max_iter));
 
     return count;
