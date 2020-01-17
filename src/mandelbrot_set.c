@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
         #endif
         starting_time = omp_get_wtime();
     #else
-        printf("\n\nMPI EXECUTION with %d processes\n", world_size);
+        if (pid==MASTER) printf("\n\nMPI EXECUTION with %d processes\n", world_size);
         starting_time = MPI_Wtime();
     #endif
 
