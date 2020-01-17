@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
             {
                 printf("PID: %d thread %d time %f\n", pid, i, timer_threads[pid][i]);
             }
-        
+        }
     #else
         printf("Process %d; WTime: %f\n", pid, MPI_Wtime() - starting_time);
     #endif
@@ -162,7 +162,8 @@ void init_MPI_env(int argc, char** argv)
     header_size = strlen(header);
 
     job_height = world_size > 2 ? FIXED_HEIGHT : N_y;
-    if (world_size > 2) {
+    if (world_size > 2) 
+    {
         job_remainder = (N_y % job_height);
         job_remainder_size = job_remainder * N_x;
     }
@@ -185,7 +186,8 @@ void master()
     //collective open
     MPI_File_open(MPI_COMM_WORLD, "mandelbrot_set_parallel.pgm",
                   MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &output_file);
-    if (world_size == 1) {
+    if (world_size == 1) 
+    {
         _worker(MASTER, N_y);
         return;
     }
@@ -195,14 +197,16 @@ void master()
     int tag;
 
     //distribute the first world_size-1 jobs
-    for (; working_slaves < world_size && row_offset < N_x; working_slaves++, row_offset += job_height) {
+    for (; working_slaves < world_size && row_offset < N_x; working_slaves++, row_offset += job_height) 
+    {
         tag = (row_offset + job_height > N_y) ? REMAINDER : DATA;
         MPI_Send(&row_offset, 1, MPI_UNSIGNED, working_slaves, tag, MPI_COMM_WORLD);
     }
 
     //loop in which we assign the remaining jobs to the slaves as they finish the previous assigned
     //until there are no more jobs to be assigned
-    do {
+    do 
+    {
         short done;
         MPI_Recv(&done, 1, MPI_SHORT, MPI_ANY_SOURCE,
                  MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
@@ -210,7 +214,8 @@ void master()
         working_slaves--;
 
         //if there is still work to be made
-        if (row_offset < N_y) {
+        if (row_offset < N_y) 
+        {
             //if check == true, we are issuing the last job which will have a different
             //size because N_y is not divisible by job_height (i.e. 0 < job_remainder < 20)
             bool check = row_offset + job_height > N_y;
@@ -218,7 +223,9 @@ void master()
             MPI_Send(&row_offset, 1, MPI_UNSIGNED, slave, tag, MPI_COMM_WORLD);
             row_offset += check ? job_remainder : job_height;
             working_slaves++;
-        } else { 
+        }
+        else 
+        { 
             //otherwise we let the slave terminate
             MPI_Send(&row_offset, 1, MPI_UNSIGNED, slave, TERMINATE, MPI_COMM_WORLD);
         }
