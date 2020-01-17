@@ -321,7 +321,8 @@ unsigned short compute_pixel(struct complex c, unsigned short max_iter)
 }
 
 //----------------------------------------------------------------------------------------
-
+//FUNCTIONS TO GET CPU ID - simple used to check that th threads were not pinned to the 
+//single process
 int get_cpu_id( void )
 {
 #if defined(_GNU_SOURCE)                              // GNU SOURCE ------------
