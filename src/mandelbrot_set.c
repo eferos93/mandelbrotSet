@@ -124,9 +124,9 @@ void init_env(int argc, char** argv)
 {
     // resolution
     N_x = atoi(argv[1]), N_y = atoi(argv[2]);
-    if(N_x < 250 || N_y < 250)
+    if(N_y < 20)
     {
-        printf("N_x and N_y must be at least 250\nexiting..");
+        printf("N_y must be at least 20\nexiting..");
         exit(0);
     }
     //area
