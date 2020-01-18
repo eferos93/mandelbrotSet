@@ -74,6 +74,7 @@ int main(int argc, char** argv) {
         #pragma omp parallel
         #pragma omp single
         nthreads = omp_get_num_threads();
+
         if(pid == MASTER) 
         {
             if (world_size == 1)
@@ -87,7 +88,7 @@ int main(int argc, char** argv) {
                 int i;
                 for (i = 0; i < world_size; i++)
                 {
-                    *(timer_threads + i) = (double*) malloc(sizeof(double) * nthreads);
+                    *(timer_threads + i) = (double*) calloc(sizeof(double) * nthreads);
                 }
             }
         #endif
