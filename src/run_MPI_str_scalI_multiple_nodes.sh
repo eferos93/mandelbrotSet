@@ -6,6 +6,6 @@ cd mandelbrotSet/src
 mpiicc mandelbrot_set.c -o mandelbrot_set_MPI_mult_nodes.x
 
 for procs in `seq 20 20 80`; do
-    mpiexec.hydra -n ${procs} ./mandelbrot_set_MPI_mult_nodes.x 20000 20000 -2.0 -1.0 1.0 2.0 65535
+    mpiexec.hydra -n ${procs} ./mandelbrot_set_MPI_mult_nodes.x 6000 6000 -2.0 -1.0 1.0 1.0 65535
 done
     

@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
             if (world_size == 1)
                 printf("\n\nOMP EXECUTION WITH %d threads\n", nthreads);
             else
-                printf("\n\nMPI+OMP EXECUTION WITH %d prcesses and %d threads\n", world_size, nthreads);
+                printf("\n\nMPI+OMP EXECUTION WITH %d processes and %d threads\n", world_size, nthreads);
         }
         #ifdef LOAD_BALANCE
             timer_threads = (double**) malloc(sizeof(double*) * world_size);
