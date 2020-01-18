@@ -2,7 +2,7 @@ echo "MPI version"
 module purge
 module load openmpi/1.8.3/intel/14.0
 module load impi-trial/5.0.1.035
-cd mandelbrotSet/src
+cd $PBS_O_WORKDIR
 mpiicc mandelbrot_set.c -o mandelbrot_set_MPI_mult_nodes.x
 
 for procs in `seq 20 20 80`; do
