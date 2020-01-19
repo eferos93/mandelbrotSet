@@ -9,7 +9,7 @@ mpicc -fopenmp mandelbrot_set.c -o mandelbrot_set_threads.x
 export OMP_PLACES=cores
 export OMP_PROC_BIND=spread
 
-for procs in {2..20}; do
+for procs in 2 4 8 16 24 32; do
     export OMP_NUM_THREADS=${procs}
     mpirun -np 1 ./mandelbrot_set_threads.x 4000 4000 -2.0 -1.0 1.0 1.0 65535;
 done
