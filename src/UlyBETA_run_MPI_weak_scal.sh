@@ -1,3 +1,4 @@
+#!/bin/sh
 echo "MPI version - weak scaling"
 module purge
 module load intel/18.0.3.222

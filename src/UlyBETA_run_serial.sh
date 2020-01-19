@@ -1,3 +1,4 @@
+#!/bin/sh
 cd mandelbrotSet/src
 gcc mandelbrot_set_serial.c -o mandelbrot_set_serial.x
 echo "SERIAL"
