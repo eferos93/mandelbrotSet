@@ -1,3 +1,4 @@
+#!/bin/sh
 echo "Hybrid version"
 module purge
 module load intel/18.0.3.222

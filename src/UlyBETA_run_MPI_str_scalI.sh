@@ -1,4 +1,4 @@
-
+#!/bin/sh
 echo "MPI version"
 module purge
 module load intel/18.0.3.222
