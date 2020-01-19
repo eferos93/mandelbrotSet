@@ -64,7 +64,7 @@ void init_env(int argc, char** argv);
 void init_MPI_env(int argc, char** argv);
 void master();
 void slave();
-void compute_mandelbrot(unsigned int row_offset, unsigned int work_amount);
+void compute_mandelbrot(unsigned int row_offset, unsigned int work_amount, unsigned short* buffer);
 unsigned short compute_pixel(struct complex c, unsigned short max_iter); 
 
 int main(int argc, char** argv) {
@@ -193,7 +193,9 @@ void master()
                   MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &output_file);
     if (world_size == 1) 
     {
-        compute_mandelbrot(MASTER, N_y);
+        unsigned short* buffer = (unsigned short*) malloc(N_y * N_x * sizeof(unsigned short));
+        compute_mandelbrot(MASTER, N_y, buffer);
+        free(buffer);
         return;
     }
 
@@ -248,6 +250,7 @@ void slave()
 {
     MPI_Status stat;
     unsigned int row_offset;
+    unsigned short* buffer = (unsigned short*) malloc(job_height * N_x * sizeof(unsigned short));
     MPI_File_open(MPI_COMM_WORLD, "mandelbrot_set_parallel.pgm",
                   MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &output_file);
 
@@ -257,11 +260,12 @@ void slave()
     while (stat.MPI_TAG != TERMINATE) 
     {
         unsigned int temp_job_height = stat.MPI_TAG == DATA ? job_height : job_remainder; 
-        compute_mandelbrot(row_offset, temp_job_height);
+        compute_mandelbrot(row_offset, temp_job_height, buffer);
         short done = 1;
         MPI_Send(&done, 1, MPI_SHORT, MASTER, stat.MPI_TAG, MPI_COMM_WORLD);
         MPI_Recv(&row_offset, 1, MPI_UNSIGNED, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &stat);
     }
+    free(buffer);
 }
 
 /**
@@ -269,10 +273,9 @@ void slave()
  * row_offset represent the from which line of the matrix to start
  * work_amount indicates how many lines to compute
  */
-void compute_mandelbrot(unsigned int row_offset, unsigned int work_amount)
+void compute_mandelbrot(unsigned int row_offset, unsigned int work_amount, unsigned short* buffer)
 {
     struct complex c;
-    unsigned short* buffer = (unsigned short*) malloc(work_amount * N_x * sizeof(unsigned short));
     unsigned int i, j;
     #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic, 10) private(c) collapse(2)
@@ -294,7 +297,6 @@ void compute_mandelbrot(unsigned int row_offset, unsigned int work_amount)
     //write the results using offset
     MPI_File_write_at(output_file, header_size * sizeof(char) + row_offset * N_x * sizeof(unsigned short), buffer,
                       N_y * work_amount, MPI_UNSIGNED_SHORT, &file_stat);
-    free(buffer);
 }
 
 
