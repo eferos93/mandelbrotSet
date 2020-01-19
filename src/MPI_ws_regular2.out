@@ -1,0 +1,54 @@
+MPI version - weak scaling
+/var/spool/slurm/d/job11945/slurm_script: line 6: cd: mandelbrotSet/src: No such file or directory
+mandelbrot_set.c(333): warning #266: function "sched_getcpu" declared implicitly
+    return  sched_getcpu( );
+            ^
+
+--------------------------------------------------------------------------
+There are not enough slots available in the system to satisfy the 2 slots
+that were requested by the application:
+  ./mandelbrot_set_MPI_ws.x
+
+Either request fewer slots for your application, or make more slots available
+for use.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+There are not enough slots available in the system to satisfy the 4 slots
+that were requested by the application:
+  ./mandelbrot_set_MPI_ws.x
+
+Either request fewer slots for your application, or make more slots available
+for use.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+There are not enough slots available in the system to satisfy the 8 slots
+that were requested by the application:
+  ./mandelbrot_set_MPI_ws.x
+
+Either request fewer slots for your application, or make more slots available
+for use.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+There are not enough slots available in the system to satisfy the 12 slots
+that were requested by the application:
+  ./mandelbrot_set_MPI_ws.x
+
+Either request fewer slots for your application, or make more slots available
+for use.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+There are not enough slots available in the system to satisfy the 16 slots
+that were requested by the application:
+  ./mandelbrot_set_MPI_ws.x
+
+Either request fewer slots for your application, or make more slots available
+for use.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+There are not enough slots available in the system to satisfy the 20 slots
+that were requested by the application:
+  ./mandelbrot_set_MPI_ws.x
+
+Either request fewer slots for your application, or make more slots available
+for use.
+--------------------------------------------------------------------------

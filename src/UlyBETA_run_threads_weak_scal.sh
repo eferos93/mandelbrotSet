@@ -1,4 +1,3 @@
-
 #!/bin/sh
 echo "Threads version - weak scaling"
 cd mandelbrotSet/src
