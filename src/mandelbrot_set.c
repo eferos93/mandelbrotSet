@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
                 int i;
                 for (i = 0; i < world_size; i++)
                 {
-                    *(timer_threads + i) = (double*) calloc(sizeof(double) * nthreads);
+                    *(timer_threads + i) = (double*) malloc(sizeof(double) * nthreads);
                 }
             }
         #endif

@@ -1,4 +1,3 @@
-
 #!/bin/sh
 cd mandelbrotSet/src
 echo "Threads version"
