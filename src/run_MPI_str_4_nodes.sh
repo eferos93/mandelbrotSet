@@ -5,7 +5,7 @@ module load impi-trial/5.0.1.035
 cd mandelbrotSet/src
 mpiicc mandelbrot_set.c -o mandelbrot_set_MPI_mult_nodes.x
 
-for procs in 20 40; do
+for procs in 20 40 60; do
     mpiexec.hydra -n ${procs} ./mandelbrot_set_MPI_mult_nodes.x 4000 4000 -2.0 -1.0 1.0 1.0 65535
 done
     

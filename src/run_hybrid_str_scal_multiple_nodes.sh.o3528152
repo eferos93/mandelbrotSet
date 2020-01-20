@@ -1,0 +1,144 @@
+Hybrid version
+
+
+OMP EXECUTION WITH 20 threads
+Process 0; WTime: 56.241487
+PID: 0 thread 0 time 55.983023
+PID: 0 thread 1 time 55.986083
+PID: 0 thread 2 time 55.985320
+PID: 0 thread 3 time 55.987700
+PID: 0 thread 4 time 55.986754
+PID: 0 thread 5 time 55.983699
+PID: 0 thread 6 time 55.965650
+PID: 0 thread 7 time 55.960061
+PID: 0 thread 8 time 55.959707
+PID: 0 thread 9 time 55.967945
+PID: 0 thread 10 time 55.972639
+PID: 0 thread 11 time 55.973557
+PID: 0 thread 12 time 55.975344
+PID: 0 thread 13 time 55.975294
+PID: 0 thread 14 time 55.968692
+PID: 0 thread 15 time 55.971553
+PID: 0 thread 16 time 55.965408
+PID: 0 thread 17 time 55.964263
+PID: 0 thread 18 time 55.968814
+PID: 0 thread 19 time 55.966216
+
+
+MPI+OMP EXECUTION WITH 2 processes and 20 threads
+Process 0; WTime: 57.562930
+PID: 0 thread 0 time 0.000000
+PID: 0 thread 1 time 0.000000
+PID: 0 thread 2 time 0.000000
+PID: 0 thread 3 time 0.000000
+PID: 0 thread 4 time 0.000000
+PID: 0 thread 5 time 0.000000
+PID: 0 thread 6 time 0.000000
+PID: 0 thread 7 time 0.000000
+PID: 0 thread 8 time 0.000000
+PID: 0 thread 9 time 0.000000
+PID: 0 thread 10 time 0.000000
+PID: 0 thread 11 time 0.000000
+PID: 0 thread 12 time 0.000000
+PID: 0 thread 13 time 0.000000
+PID: 0 thread 14 time 0.000000
+PID: 0 thread 15 time 0.000000
+PID: 0 thread 16 time 0.000000
+PID: 0 thread 17 time 0.000000
+PID: 0 thread 18 time 0.000000
+PID: 0 thread 19 time 0.000000
+Process 1; WTime: 57.579656
+PID: 1 thread 0 time 57.327466
+PID: 1 thread 1 time 57.320502
+PID: 1 thread 2 time 57.322301
+PID: 1 thread 3 time 57.322896
+PID: 1 thread 4 time 57.327453
+PID: 1 thread 5 time 57.327256
+PID: 1 thread 6 time 57.326215
+PID: 1 thread 7 time 57.324581
+PID: 1 thread 8 time 57.298642
+PID: 1 thread 9 time 57.299143
+PID: 1 thread 10 time 57.313491
+PID: 1 thread 11 time 57.311868
+PID: 1 thread 12 time 57.315262
+PID: 1 thread 13 time 57.319355
+PID: 1 thread 14 time 57.319270
+PID: 1 thread 15 time 57.320272
+PID: 1 thread 16 time 57.325742
+PID: 1 thread 17 time 57.319420
+PID: 1 thread 18 time 57.320693
+PID: 1 thread 19 time 57.316224
+
+
+MPI+OMP EXECUTION WITH 3 processes and 20 threads
+Process 0; WTime: 32.614640
+PID: 0 thread 0 time 0.000000
+PID: 0 thread 1 time 0.000000
+PID: 0 thread 2 time 0.000000
+PID: 0 thread 3 time 0.000000
+PID: 0 thread 4 time 0.000000
+PID: 0 thread 5 time 0.000000
+PID: 0 thread 6 time 0.000000
+PID: 0 thread 7 time 0.000000
+PID: 0 thread 8 time 0.000000
+PID: 0 thread 9 time 0.000000
+PID: 0 thread 10 time 0.000000
+PID: 0 thread 11 time 0.000000
+PID: 0 thread 12 time 0.000000
+PID: 0 thread 13 time 0.000000
+PID: 0 thread 14 time 0.000000
+PID: 0 thread 15 time 0.000000
+PID: 0 thread 16 time 0.000000
+PID: 0 thread 17 time 0.000000
+PID: 0 thread 18 time 0.000000
+PID: 0 thread 19 time 0.000000
+Process 1; WTime: 32.620603
+Process 2; WTime: 32.631749
+PID: 1 thread 0 time 28.716223
+PID: 1 thread 1 time 28.714431
+PID: 1 thread 2 time 28.712442
+PID: 2 thread 0 time 28.637740
+PID: 2 thread 1 time 28.642434
+PID: 2 thread 2 time 28.613278
+PID: 2 thread 3 time 28.612419
+PID: 1 thread 3 time 28.726814
+PID: 2 thread 4 time 28.609261
+PID: 2 thread 5 time 28.617471
+PID: 1 thread 4 time 28.717282
+PID: 2 thread 6 time 28.611716
+PID: 1 thread 5 time 28.710416
+PID: 2 thread 7 time 28.614353
+PID: 1 thread 6 time 28.719835
+PID: 2 thread 8 time 28.611449
+PID: 1 thread 7 time 28.711503
+PID: 2 thread 9 time 28.611188
+PID: 1 thread 8 time 28.707869
+PID: 2 thread 10 time 28.619943
+PID: 1 thread 9 time 28.699738
+PID: 2 thread 11 time 28.608110
+PID: 2 thread 12 time 28.615270
+PID: 2 thread 13 time 28.630393
+PID: 2 thread 14 time 28.620754
+PID: 1 thread 10 time 28.713767
+PID: 1 thread 11 time 28.727237
+PID: 2 thread 15 time 28.615973
+PID: 1 thread 12 time 28.711831
+PID: 2 thread 16 time 28.610936
+PID: 1 thread 13 time 28.721359
+PID: 2 thread 17 time 28.611877
+PID: 1 thread 14 time 28.705931
+PID: 2 thread 18 time 28.642958
+PID: 1 thread 15 time 28.711875
+PID: 2 thread 19 time 28.636997
+PID: 1 thread 16 time 28.712119
+PID: 1 thread 17 time 28.707408
+PID: 1 thread 18 time 28.709413
+PID: 1 thread 19 time 28.721570
+cn07-25 : flushing filesystem cache...
+cn02-20 : flushing filesystem cache...
+cn07-26 : flushing filesystem cache...
+cn07-22 : flushing filesystem cache...
+cn07-26 : filesystem cache flushed
+cn07-25 : filesystem cache flushed
+cn02-20 : filesystem cache flushed
+cn07-22 : filesystem cache flushed
