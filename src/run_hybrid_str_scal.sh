@@ -11,5 +11,5 @@ export OMP_PROC_BIND=spread
 
 OLDIFS=$IFS; IFS=','; for procs in 1,20 4,6 10,2 20,1; do set -- $procs;
     export OMP_NUM_THREADS=$2
-    mpiexec.hydra -n $1 -ppn 1 ./mandelbrot_set_hybrid.x 4000 4000 -2.0 -1.0 1.0 1.0 65535;
+    mpiexec.hydra -n $1 -ppn 1 ./mandelbrot_set_hybrid.x 2000 2000 -2.0 -1.0 1.0 1.0 65535;
 done; IFS=$OLDIFS
