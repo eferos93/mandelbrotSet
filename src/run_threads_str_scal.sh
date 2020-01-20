@@ -3,7 +3,7 @@ echo "Threads version"
 module purge
 module load openmpi/1.8.3/intel/14.0
 module load impi-trial/5.0.1.035
-cd $PBS_O_WORKDIR #used this for submitting job in the cluster
+cd mandelbrotSet/src #used this for submitting job in the cluster
 mpiicc -fopenmp mandelbrot_set.c -o mandelbrot_set_threads.x
 export I_MPI_JOB_RESPECT_PROCESS_PLACEMENT=off
 export OMP_PLACES=cores

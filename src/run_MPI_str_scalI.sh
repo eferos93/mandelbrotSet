@@ -3,7 +3,7 @@ module purge
 module load openmpi/1.8.3/intel/14.0
 module load impi-trial/5.0.1.035
 
-cd $PBS_O_WORKDIR
+cd mandelbrotSet/src
 mpiicc mandelbrot_set.c -o mandelbrot_set_MPI.x
 
 for procs in {2..20}; do
