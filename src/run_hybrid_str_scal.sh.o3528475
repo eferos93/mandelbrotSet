@@ -1,0 +1,134 @@
+Hybrid version
+
+
+OMP EXECUTION WITH 20 threads
+Process 0; WTime: 56.307631
+PID: 0 thread 0 time 55.994049
+PID: 0 thread 1 time 55.990857
+PID: 0 thread 2 time 55.997658
+PID: 0 thread 3 time 55.993914
+PID: 0 thread 4 time 55.992565
+PID: 0 thread 5 time 55.997756
+PID: 0 thread 6 time 55.978134
+PID: 0 thread 7 time 55.967646
+PID: 0 thread 8 time 55.970677
+PID: 0 thread 9 time 55.969725
+PID: 0 thread 10 time 55.973980
+PID: 0 thread 11 time 55.980426
+PID: 0 thread 12 time 55.980526
+PID: 0 thread 13 time 55.982789
+PID: 0 thread 14 time 55.974123
+PID: 0 thread 15 time 55.978800
+PID: 0 thread 16 time 55.977432
+PID: 0 thread 17 time 55.974199
+PID: 0 thread 18 time 55.976913
+PID: 0 thread 19 time 55.975028
+
+
+MPI+OMP EXECUTION WITH 4 processes and 6 threads
+Process 0; WTime: 76.636280
+PID: 0 thread 0 time 0.000000
+PID: 0 thread 1 time 0.000000
+PID: 0 thread 2 time 0.000000
+PID: 0 thread 3 time 0.000000
+PID: 0 thread 4 time 0.000000
+PID: 0 thread 5 time 0.000000
+Process 2; WTime: 76.635561
+PID: 2 thread 0 time 76.100067
+PID: 2 thread 1 time 75.799716
+PID: 2 thread 2 time 76.220352
+PID: 2 thread 3 time 76.221789
+PID: 2 thread 4 time 76.246801
+PID: 2 thread 5 time 76.237386
+Process 3; WTime: 76.636364
+PID: 3 thread 0 time 76.000631
+PID: 3 thread 1 time 75.785908
+PID: 3 thread 2 time 76.152100
+PID: 3 thread 3 time 76.156428
+PID: 3 thread 4 time 76.155877
+PID: 3 thread 5 time 76.150355
+Process 1; WTime: 76.636015
+PID: 1 thread 0 time 76.131147
+PID: 1 thread 1 time 75.833318
+PID: 1 thread 2 time 76.231100
+PID: 1 thread 3 time 76.239317
+PID: 1 thread 4 time 76.246270
+PID: 1 thread 5 time 76.240894
+
+
+MPI+OMP EXECUTION WITH 10 processes and 2 threads
+Process 0; WTime: 63.757462
+PID: 0 thread 0 time 0.000000
+PID: 0 thread 1 time 0.000000
+Process 2; WTime: 63.770171
+PID: 2 thread 0 time 63.562742
+PID: 2 thread 1 time 63.557400
+Process 3; WTime: 63.767339
+PID: 3 thread 0 time 63.432590
+PID: 3 thread 1 time 63.430544
+Process 4; WTime: 63.770230
+PID: 4 thread 0 time 63.481684
+PID: 4 thread 1 time 63.472553
+Process 5; WTime: 63.757249
+PID: 5 thread 0 time 63.479453
+PID: 5 thread 1 time 63.482383
+Process 6; WTime: 63.767202
+PID: 6 thread 0 time 63.471972
+PID: 6 thread 1 time 63.471947
+Process 7; WTime: 63.777965
+PID: 7 thread 0 time 63.512742
+PID: 7 thread 1 time 63.513691
+Process 8; WTime: 63.777964
+PID: 8 thread 0 time 63.449743
+PID: 8 thread 1 time 63.444603
+Process 9; WTime: 63.767026
+PID: 9 thread 0 time 63.642692
+PID: 9 thread 1 time 63.635563
+Process 1; WTime: 63.757587
+PID: 1 thread 0 time 63.523875
+PID: 1 thread 1 time 63.519575
+
+
+MPI+OMP EXECUTION WITH 20 processes and 1 threads
+Process 0; WTime: 61.463206
+PID: 0 thread 0 time 0.000000
+Process 11; WTime: 61.463408
+PID: 11 thread 0 time 60.592257
+Process 15; WTime: 61.463417
+PID: 15 thread 0 time 61.396628
+Process 19; WTime: 61.463407
+PID: 19 thread 0 time 60.457803
+Process 1; WTime: 61.463281
+PID: 1 thread 0 time 61.279067
+Process 3; WTime: 61.463276
+PID: 3 thread 0 time 59.547693
+Process 4; WTime: 61.463292
+PID: 4 thread 0 time 59.581188
+Process 5; WTime: 61.463285
+PID: 5 thread 0 time 59.907051
+Process 6; WTime: 61.463301
+PID: 6 thread 0 time 61.213880
+Process 7; WTime: 61.463290
+PID: 7 thread 0 time 59.624940
+Process 8; WTime: 61.463297
+PID: 8 thread 0 time 59.928349
+Process 10; WTime: 61.463438
+PID: 10 thread 0 time 59.729327
+Process 14; WTime: 61.463429
+PID: 14 thread 0 time 59.664052
+Process 18; WTime: 61.463424
+PID: 18 thread 0 time 59.817061
+Process 2; WTime: 61.463402
+PID: 2 thread 0 time 59.963488
+Process 13; WTime: 61.463537
+PID: 13 thread 0 time 61.351008
+Process 12; WTime: 61.463538
+PID: 12 thread 0 time 59.516854
+Process 16; WTime: 61.463555
+PID: 16 thread 0 time 59.642394
+Process 17; WTime: 61.463561
+PID: 17 thread 0 time 59.890484
+Process 9; WTime: 61.463859
+PID: 9 thread 0 time 60.072218
+cn08-14 : flushing filesystem cache...
+cn08-14 : filesystem cache flushed
