@@ -1,4 +1,4 @@
-
+#USE THIS ONLY IN LOCAL MACHINE, FOR TESTING ON THE CLUSTER, SEE THE .SH FILES
 mandelbrot_set.x: mandelbrot_set.c mandelbrot_set_serial.x
 	mpicc -fopenmp $< -o $@
 
