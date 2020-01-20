@@ -37,13 +37,18 @@
 #define TERMINATE 2
 #define REMAINDER 3
 #define MASTER 0
+//fixed height of the chunks to be distributed to the slaves 
+//the dim of a  chunk is N_x * FIXED_HEIGHT
 #define FIXED_HEIGHT 20
 
 //THREADS load balancing times
 #ifdef _OPENMP
     #define LOAD_BALANCE
 #endif
-unsigned short I_max, header_size;
+unsigned short I_max, header_size; //header_size = size of the pgm header
+
+//job_size = N_x * FIXED_HEIGHT or (N_x * job_remainder) = job_remainder_size
+//where job_remainder = N_y % FIXED_SIZE
 unsigned int N_x, N_y, job_size, job_height, job_remainder, job_remainder_size;
 int pid, world_size, nthreads;
 double x_L, x_R, y_L, y_R;
@@ -123,11 +128,11 @@ int main(int argc, char** argv) {
  */
 void init_env(int argc, char** argv) 
 {
-    // resolution
+    // resolution of the pgm file
     N_x = atoi(argv[1]), N_y = atoi(argv[2]);
-    if(N_y < 20)
+    if(N_y < FIXED_HEIGHT)
     {
-        printf("N_y must be at least 20\nexiting..");
+        printf("N_y must be at least %d\nexiting..", FIXED_HEIGHT);
         exit(0);
     }
     //area
@@ -167,8 +172,9 @@ void init_MPI_env(int argc, char** argv)
     sprintf(header, "P5\n%d %d\n%d\n", N_x, N_y, I_max);
     header_size = strlen(header);
 
-    job_height = world_size > 2 ? FIXED_HEIGHT : N_y;
-    if (world_size > 2) 
+    bool check = world_size > 2;
+    job_height = check ? FIXED_HEIGHT : N_y;
+    if (check) 
     {
         job_remainder = (N_y % job_height);
         job_remainder_size = job_remainder * N_x;
@@ -192,6 +198,7 @@ void master()
     //collective open
     MPI_File_open(MPI_COMM_WORLD, "mandelbrot_set_parallel.pgm",
                   MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &output_file);
+
     if (world_size == 1) 
     {
         unsigned short* buffer = (unsigned short*) malloc(N_y * N_x * sizeof(unsigned short));
@@ -296,8 +303,9 @@ void compute_mandelbrot(unsigned int row_offset, unsigned int work_amount, unsig
     }
 
     //write the results using offset
-    MPI_File_write_at(output_file, header_size * sizeof(char) + row_offset * N_x * sizeof(unsigned short), buffer,
-                      N_y * work_amount, MPI_UNSIGNED_SHORT, &file_stat);
+    MPI_File_write_at(output_file,
+                      header_size * sizeof(char) + row_offset * N_x * sizeof(unsigned short),
+                      buffer, N_x * work_amount, MPI_UNSIGNED_SHORT, &file_stat);
 }
 
 
