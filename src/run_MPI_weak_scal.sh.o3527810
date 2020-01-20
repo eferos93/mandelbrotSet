@@ -1,0 +1,83 @@
+MPI version - weak scaling
+
+
+MPI EXECUTION with 2 processes
+Process 0; WTime: 15.494619
+Process 1; WTime: 15.494842
+
+
+MPI EXECUTION with 4 processes
+Process 0; WTime: 10.656306
+Process 1; WTime: 10.656348
+Process 3; WTime: 10.656358
+Process 2; WTime: 10.656465
+
+
+MPI EXECUTION with 8 processes
+Process 0; WTime: 32.253448
+Process 1; WTime: 32.253467
+Process 2; WTime: 32.253464
+Process 3; WTime: 32.253468
+Process 4; WTime: 32.253465
+Process 5; WTime: 32.253470
+Process 6; WTime: 32.253473
+Process 7; WTime: 32.253646
+
+
+MPI EXECUTION with 12 processes
+Process 0; WTime: 10.492808
+Process 1; WTime: 10.492852
+Process 2; WTime: 10.492851
+Process 3; WTime: 10.492848
+Process 4; WTime: 10.492858
+Process 5; WTime: 10.492855
+Process 7; WTime: 10.492865
+Process 8; WTime: 10.492857
+Process 9; WTime: 10.492852
+Process 10; WTime: 10.492851
+Process 11; WTime: 10.492868
+Process 6; WTime: 10.493022
+
+
+MPI EXECUTION with 16 processes
+Process 0; WTime: 9.824929
+Process 6; WTime: 9.824966
+Process 7; WTime: 9.824968
+Process 8; WTime: 9.824986
+Process 12; WTime: 9.824988
+Process 13; WTime: 9.824985
+Process 15; WTime: 9.824971
+Process 1; WTime: 9.824989
+Process 2; WTime: 9.825002
+Process 3; WTime: 9.824988
+Process 4; WTime: 9.824988
+Process 5; WTime: 9.824988
+Process 9; WTime: 9.825018
+Process 11; WTime: 9.824983
+Process 14; WTime: 9.824983
+Process 10; WTime: 9.825105
+
+
+MPI EXECUTION with 20 processes
+Process 0; WTime: 10.157825
+Process 12; WTime: 10.157852
+Process 1; WTime: 10.157904
+Process 2; WTime: 10.157891
+Process 5; WTime: 10.157899
+Process 7; WTime: 10.157919
+Process 9; WTime: 10.157926
+Process 11; WTime: 10.157909
+Process 15; WTime: 10.157865
+Process 17; WTime: 10.157891
+Process 19; WTime: 10.157911
+Process 4; WTime: 10.157925
+Process 6; WTime: 10.157931
+Process 8; WTime: 10.157953
+Process 10; WTime: 10.157921
+Process 13; WTime: 10.157925
+Process 14; WTime: 10.157891
+Process 16; WTime: 10.157921
+Process 18; WTime: 10.157891
+Process 3; WTime: 10.158310
+cn04-18 : flushing filesystem cache...
+cn04-18 : filesystem cache flushed

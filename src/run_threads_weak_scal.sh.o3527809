@@ -1,0 +1,89 @@
+Threads version - weak scaling
+
+
+OMP EXECUTION WITH 2 threads
+Process 0; WTime: 7.693402
+PID: 0 thread 0 time 7.600503
+PID: 0 thread 1 time 7.599486
+
+
+OMP EXECUTION WITH 4 threads
+Process 0; WTime: 7.836562
+PID: 0 thread 0 time 7.795949
+PID: 0 thread 1 time 7.795815
+PID: 0 thread 2 time 7.796017
+PID: 0 thread 3 time 7.796263
+
+
+OMP EXECUTION WITH 8 threads
+Process 0; WTime: 8.357848
+PID: 0 thread 0 time 8.261614
+PID: 0 thread 1 time 8.262620
+PID: 0 thread 2 time 8.261827
+PID: 0 thread 3 time 8.262269
+PID: 0 thread 4 time 8.261449
+PID: 0 thread 5 time 8.261695
+PID: 0 thread 6 time 8.263448
+PID: 0 thread 7 time 8.263299
+
+
+OMP EXECUTION WITH 12 threads
+Process 0; WTime: 31.799837
+PID: 0 thread 0 time 8.638183
+PID: 0 thread 1 time 8.638017
+PID: 0 thread 2 time 8.639035
+PID: 0 thread 3 time 8.638091
+PID: 0 thread 4 time 8.638222
+PID: 0 thread 5 time 8.636746
+PID: 0 thread 6 time 8.637962
+PID: 0 thread 7 time 8.638304
+PID: 0 thread 8 time 8.638224
+PID: 0 thread 9 time 8.638366
+PID: 0 thread 10 time 8.637401
+PID: 0 thread 11 time 8.638283
+
+
+OMP EXECUTION WITH 16 threads
+Process 0; WTime: 9.022451
+PID: 0 thread 0 time 8.825631
+PID: 0 thread 1 time 8.826198
+PID: 0 thread 2 time 8.826073
+PID: 0 thread 3 time 8.826111
+PID: 0 thread 4 time 8.826483
+PID: 0 thread 5 time 8.826180
+PID: 0 thread 6 time 8.822457
+PID: 0 thread 7 time 8.825094
+PID: 0 thread 8 time 8.825254
+PID: 0 thread 9 time 8.824377
+PID: 0 thread 10 time 8.824073
+PID: 0 thread 11 time 8.825361
+PID: 0 thread 12 time 8.825271
+PID: 0 thread 13 time 8.824646
+PID: 0 thread 14 time 8.826566
+PID: 0 thread 15 time 8.826194
+
+
+OMP EXECUTION WITH 20 threads
+Process 0; WTime: 8.822711
+PID: 0 thread 0 time 8.713946
+PID: 0 thread 1 time 8.713609
+PID: 0 thread 2 time 8.713439
+PID: 0 thread 3 time 8.713571
+PID: 0 thread 4 time 8.714401
+PID: 0 thread 5 time 8.713823
+PID: 0 thread 6 time 8.710634
+PID: 0 thread 7 time 8.711331
+PID: 0 thread 8 time 8.709195
+PID: 0 thread 9 time 8.709866
+PID: 0 thread 10 time 8.711633
+PID: 0 thread 11 time 8.711598
+PID: 0 thread 12 time 8.711536
+PID: 0 thread 13 time 8.710191
+PID: 0 thread 14 time 8.710804
+PID: 0 thread 15 time 8.712180
+PID: 0 thread 16 time 8.711878
+PID: 0 thread 17 time 8.710517
+PID: 0 thread 18 time 8.711638
+PID: 0 thread 19 time 8.711174
+cn04-17 : flushing filesystem cache...
+cn04-17 : filesystem cache flushed

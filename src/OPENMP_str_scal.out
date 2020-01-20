@@ -1,4 +1,4 @@
-/var/spool/slurm/d/job11946/slurm_script: line 2: cd: mandelbrotSet/src: No such file or directory
+/var/spool/slurm/d/job12014/slurm_script: line 2: cd: mandelbrotSet/src: No such file or directory
 Threads version
 mandelbrot_set.c(333): warning #266: function "sched_getcpu" declared implicitly
     return  sched_getcpu( );
@@ -7,3 +7,110 @@ mandelbrot_set.c(333): warning #266: function "sched_getcpu" declared implicitly
 
 
 OMP EXECUTION WITH 2 threads
+Process 0; WTime: 488.912845
+PID: 0 thread 0 time 488.384556
+PID: 0 thread 1 time 488.377979
+
+
+OMP EXECUTION WITH 4 threads
+Process 0; WTime: 306.553292
+PID: 0 thread 0 time 306.247817
+PID: 0 thread 1 time 306.254351
+PID: 0 thread 2 time 306.256712
+PID: 0 thread 3 time 306.247943
+
+
+OMP EXECUTION WITH 8 threads
+Process 0; WTime: 306.566800
+PID: 0 thread 0 time 306.276415
+PID: 0 thread 1 time 306.173990
+PID: 0 thread 2 time 306.146423
+PID: 0 thread 3 time 306.237066
+PID: 0 thread 4 time 306.321350
+PID: 0 thread 5 time 306.274586
+PID: 0 thread 6 time 306.229818
+PID: 0 thread 7 time 306.270817
+
+
+OMP EXECUTION WITH 16 threads
+Process 0; WTime: 307.817151
+PID: 0 thread 0 time 307.527750
+PID: 0 thread 1 time 307.417858
+PID: 0 thread 2 time 307.419058
+PID: 0 thread 3 time 307.484021
+PID: 0 thread 4 time 307.454107
+PID: 0 thread 5 time 307.409833
+PID: 0 thread 6 time 307.315391
+PID: 0 thread 7 time 307.403531
+PID: 0 thread 8 time 307.431520
+PID: 0 thread 9 time 307.459153
+PID: 0 thread 10 time 307.459747
+PID: 0 thread 11 time 307.463859
+PID: 0 thread 12 time 307.447144
+PID: 0 thread 13 time 307.400065
+PID: 0 thread 14 time 307.469374
+PID: 0 thread 15 time 307.460811
+
+
+OMP EXECUTION WITH 24 threads
+Process 0; WTime: 306.654001
+PID: 0 thread 0 time 306.263899
+PID: 0 thread 1 time 306.280461
+PID: 0 thread 2 time 306.079873
+PID: 0 thread 3 time 306.230884
+PID: 0 thread 4 time 306.262482
+PID: 0 thread 5 time 306.222934
+PID: 0 thread 6 time 306.276556
+PID: 0 thread 7 time 306.147794
+PID: 0 thread 8 time 306.281910
+PID: 0 thread 9 time 306.162703
+PID: 0 thread 10 time 306.160236
+PID: 0 thread 11 time 306.188175
+PID: 0 thread 12 time 306.344805
+PID: 0 thread 13 time 306.166176
+PID: 0 thread 14 time 306.332901
+PID: 0 thread 15 time 306.273021
+PID: 0 thread 16 time 306.292121
+PID: 0 thread 17 time 306.288575
+PID: 0 thread 18 time 306.227899
+PID: 0 thread 19 time 306.189579
+PID: 0 thread 20 time 306.247597
+PID: 0 thread 21 time 306.190052
+PID: 0 thread 22 time 306.214589
+PID: 0 thread 23 time 306.275171
+
+
+OMP EXECUTION WITH 32 threads
+Process 0; WTime: 306.071727
+PID: 0 thread 0 time 305.594566
+PID: 0 thread 1 time 305.526578
+PID: 0 thread 2 time 305.707515
+PID: 0 thread 3 time 305.628889
+PID: 0 thread 4 time 305.596742
+PID: 0 thread 5 time 305.669446
+PID: 0 thread 6 time 305.663450
+PID: 0 thread 7 time 305.536365
+PID: 0 thread 8 time 305.651641
+PID: 0 thread 9 time 305.660386
+PID: 0 thread 10 time 305.611310
+PID: 0 thread 11 time 305.586468
+PID: 0 thread 12 time 305.584857
+PID: 0 thread 13 time 305.605904
+PID: 0 thread 14 time 305.575062
+PID: 0 thread 15 time 305.590367
+PID: 0 thread 16 time 305.579529
+PID: 0 thread 17 time 305.783576
+PID: 0 thread 18 time 305.775049
+PID: 0 thread 19 time 305.576489
+PID: 0 thread 20 time 305.634737
+PID: 0 thread 21 time 305.557621
+PID: 0 thread 22 time 305.650455
+PID: 0 thread 23 time 305.598025
+PID: 0 thread 24 time 305.717001
+PID: 0 thread 25 time 305.573638
+PID: 0 thread 26 time 305.587775
+PID: 0 thread 27 time 305.586169
+PID: 0 thread 28 time 305.533182
+PID: 0 thread 29 time 305.458146
+PID: 0 thread 30 time 305.591574
+PID: 0 thread 31 time 305.656611

@@ -1,0 +1,4 @@
+SERIAL
+N_x: 2000; N_y: 2000; x_L: -2.000000; y_L: -1.000000; x_R: 1.000000; y_R: 1.000000; I_max: 65535; d_x: 0.001500; d_y: 0.001000;Total time: 440.246029
+cn08-12 : flushing filesystem cache...
+cn08-12 : filesystem cache flushed

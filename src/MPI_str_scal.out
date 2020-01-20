@@ -1,272 +1,110 @@
 MPI version
-/var/spool/slurm/d/job11914/slurm_script: line 6: cd: mandelbrotSet/src: No such file or directory
-mandelbrot_set.c(331): warning #266: function "sched_getcpu" declared implicitly
+/var/spool/slurm/d/job11947/slurm_script: line 6: cd: mandelbrotSet/src: No such file or directory
+mandelbrot_set.c(333): warning #266: function "sched_getcpu" declared implicitly
     return  sched_getcpu( );
             ^
 
 
 
 MPI EXECUTION with 2 processes
-Process 1; WTime: 1072.065827
-Process 0; WTime: 1072.066936
-
-
-MPI EXECUTION with 3 processes
-Process 0; WTime: 526.568398
-Process 1; WTime: 526.568510
-Process 2; WTime: 526.570845
+Process 1; WTime: 1024.045735
+Process 0; WTime: 1024.032689
 
 
 MPI EXECUTION with 4 processes
-Process 0; WTime: 355.236990
-Process 1; WTime: 355.237175
-Process 2; WTime: 355.237093
-Process 3; WTime: 355.237535
-
-
-MPI EXECUTION with 5 processes
-Process 0; WTime: 270.870893
-Process 1; WTime: 270.871006
-Process 3; WTime: 270.871004
-Process 4; WTime: 270.871008
-Process 2; WTime: 270.871496
-
-
-MPI EXECUTION with 6 processes
-Process 0; WTime: 219.606761
-Process 1; WTime: 219.606922
-Process 2; WTime: 219.606886
-Process 4; WTime: 219.606873
-Process 5; WTime: 219.606922
-Process 3; WTime: 219.607311
-
-
-MPI EXECUTION with 7 processes
-Process 0; WTime: 185.913874
-Process 1; WTime: 185.913993
-Process 3; WTime: 185.913997
-Process 4; WTime: 185.914007
-Process 5; WTime: 185.913942
-Process 6; WTime: 185.913973
-Process 2; WTime: 185.914481
+Process 2; WTime: 331.368174
+Process 0; WTime: 331.368105
+Process 3; WTime: 331.368147
+Process 1; WTime: 331.368596
 
 
 MPI EXECUTION with 8 processes
-Process 2; WTime: 161.781291
-Process 4; WTime: 161.781291
-Process 6; WTime: 161.781277
-Process 7; WTime: 161.781323
-Process 0; WTime: 161.781160
-Process 3; WTime: 161.781295
-Process 5; WTime: 161.781327
-Process 1; WTime: 161.781723
-
-
-MPI EXECUTION with 9 processes
-Process 0; WTime: 143.882059
-Process 1; WTime: 143.882187
-Process 2; WTime: 143.882143
-Process 3; WTime: 143.882092
-Process 4; WTime: 143.882092
-Process 6; WTime: 143.882147
-Process 7; WTime: 143.882104
-Process 8; WTime: 143.882141
-Process 5; WTime: 143.882579
-
-
-MPI EXECUTION with 10 processes
-Process 6; WTime: 129.501678
-Process 8; WTime: 129.501612
-Process 9; WTime: 129.501718
-Process 0; WTime: 129.501558
-Process 2; WTime: 129.501673
-Process 3; WTime: 129.501768
-Process 4; WTime: 129.501757
-Process 5; WTime: 129.501769
-Process 7; WTime: 129.501746
-Process 1; WTime: 129.502344
-
-
-MPI EXECUTION with 11 processes
-Process 8; WTime: 117.828054
-Process 9; WTime: 117.828128
-Process 10; WTime: 117.828025
-Process 0; WTime: 117.827964
-Process 1; WTime: 117.828129
-Process 2; WTime: 117.828115
-Process 4; WTime: 117.828086
-Process 5; WTime: 117.828040
-Process 6; WTime: 117.828120
-Process 7; WTime: 117.828107
-Process 3; WTime: 117.828480
-
-
-MPI EXECUTION with 12 processes
-Process 0; WTime: 108.778989
-Process 1; WTime: 108.779090
-Process 2; WTime: 108.779156
-Process 3; WTime: 108.779097
-Process 4; WTime: 108.779057
-Process 5; WTime: 108.779086
-Process 6; WTime: 108.779063
-Process 7; WTime: 108.779060
-Process 8; WTime: 108.779051
-Process 10; WTime: 108.779089
-Process 11; WTime: 108.779016
-Process 9; WTime: 108.779479
-
-
-MPI EXECUTION with 13 processes
-Process 2; WTime: 99.609209
-Process 3; WTime: 99.609223
-Process 5; WTime: 99.609291
-Process 6; WTime: 99.609289
-Process 7; WTime: 99.609244
-Process 8; WTime: 99.609277
-Process 9; WTime: 99.609289
-Process 10; WTime: 99.609287
-Process 11; WTime: 99.609219
-Process 12; WTime: 99.609294
-Process 0; WTime: 99.609205
-Process 1; WTime: 99.609294
-Process 4; WTime: 99.609593
-
-
-MPI EXECUTION with 14 processes
-Process 0; WTime: 92.221356
-Process 1; WTime: 92.221439
-Process 2; WTime: 92.221476
-Process 4; WTime: 92.221476
-Process 5; WTime: 92.221449
-Process 6; WTime: 92.221412
-Process 7; WTime: 92.221504
-Process 8; WTime: 92.221438
-Process 9; WTime: 92.221414
-Process 10; WTime: 92.221443
-Process 11; WTime: 92.221509
-Process 12; WTime: 92.221477
-Process 13; WTime: 92.221507
-Process 3; WTime: 92.221896
-
-
-MPI EXECUTION with 15 processes
-Process 8; WTime: 85.662459
-Process 9; WTime: 85.662401
-Process 10; WTime: 85.662404
-Process 11; WTime: 85.662480
-Process 12; WTime: 85.662460
-Process 13; WTime: 85.662480
-Process 14; WTime: 85.662461
-Process 0; WTime: 85.662361
-Process 1; WTime: 85.662481
-Process 3; WTime: 85.662465
-Process 4; WTime: 85.662459
-Process 5; WTime: 85.662492
-Process 6; WTime: 85.662478
-Process 7; WTime: 85.662482
-Process 2; WTime: 85.663015
+Process 0; WTime: 157.910477
+Process 1; WTime: 157.910526
+Process 2; WTime: 157.910551
+Process 3; WTime: 157.910559
+Process 4; WTime: 157.910628
+Process 6; WTime: 157.910641
+Process 7; WTime: 157.910589
+Process 5; WTime: 157.910948
 
 
 MPI EXECUTION with 16 processes
-Process 6; WTime: 80.000899
-Process 7; WTime: 80.000907
-Process 8; WTime: 80.000895
-Process 9; WTime: 80.000883
-Process 10; WTime: 80.000895
-Process 11; WTime: 80.000915
-Process 12; WTime: 80.000890
-Process 13; WTime: 80.000913
-Process 14; WTime: 80.000904
-Process 15; WTime: 80.000866
-Process 0; WTime: 80.000796
-Process 1; WTime: 80.000915
-Process 2; WTime: 80.000900
-Process 4; WTime: 80.000905
-Process 5; WTime: 80.000915
-Process 3; WTime: 80.001325
+Process 4; WTime: 75.505868
+Process 6; WTime: 75.505791
+Process 7; WTime: 75.505805
+Process 8; WTime: 75.505803
+Process 9; WTime: 75.505753
+Process 10; WTime: 75.505741
+Process 11; WTime: 75.505808
+Process 12; WTime: 75.505750
+Process 13; WTime: 75.505760
+Process 14; WTime: 75.505724
+Process 15; WTime: 75.505820
+Process 0; WTime: 75.505628
+Process 1; WTime: 75.505706
+Process 2; WTime: 75.505788
+Process 3; WTime: 75.505827
+Process 5; WTime: 75.506249
 
 
-MPI EXECUTION with 17 processes
-Process 8; WTime: 75.056741
-Process 13; WTime: 75.056675
-Process 14; WTime: 75.056684
-Process 15; WTime: 75.056742
-Process 16; WTime: 75.056734
-Process 0; WTime: 75.056634
-Process 1; WTime: 75.056729
-Process 2; WTime: 75.056686
-Process 4; WTime: 75.056754
-Process 5; WTime: 75.056680
-Process 6; WTime: 75.056755
-Process 7; WTime: 75.056749
-Process 9; WTime: 75.056680
-Process 10; WTime: 75.056717
-Process 11; WTime: 75.056709
-Process 12; WTime: 75.056755
-Process 3; WTime: 75.057785
+MPI EXECUTION with 24 processes
+Process 18; WTime: 50.692847
+Process 19; WTime: 50.692968
+Process 20; WTime: 50.693032
+Process 21; WTime: 50.692912
+Process 22; WTime: 50.692939
+Process 23; WTime: 50.692928
+Process 0; WTime: 50.692858
+Process 2; WTime: 50.692927
+Process 3; WTime: 50.693116
+Process 4; WTime: 50.693019
+Process 5; WTime: 50.692977
+Process 6; WTime: 50.693018
+Process 7; WTime: 50.692996
+Process 8; WTime: 50.692994
+Process 9; WTime: 50.693051
+Process 10; WTime: 50.692988
+Process 11; WTime: 50.692966
+Process 12; WTime: 50.693026
+Process 13; WTime: 50.693101
+Process 14; WTime: 50.693024
+Process 15; WTime: 50.692976
+Process 16; WTime: 50.693047
+Process 17; WTime: 50.692994
+Process 1; WTime: 50.693397
 
 
-MPI EXECUTION with 18 processes
-Process 2; WTime: 70.737884
-Process 4; WTime: 70.737891
-Process 6; WTime: 70.737901
-Process 8; WTime: 70.737890
-Process 10; WTime: 70.737923
-Process 16; WTime: 70.737897
-Process 0; WTime: 70.737821
-Process 1; WTime: 70.737952
-Process 3; WTime: 70.737877
-Process 5; WTime: 70.737938
-Process 7; WTime: 70.737904
-Process 9; WTime: 70.737869
-Process 11; WTime: 70.737868
-Process 13; WTime: 70.737889
-Process 15; WTime: 70.737996
-Process 17; WTime: 70.737861
-Process 12; WTime: 70.738809
-Process 14; WTime: 70.739270
-
-
-MPI EXECUTION with 19 processes
-Process 10; WTime: 66.620229
-Process 11; WTime: 66.620280
-Process 12; WTime: 66.620018
-Process 13; WTime: 66.620185
-Process 15; WTime: 66.620297
-Process 16; WTime: 66.620201
-Process 17; WTime: 66.620307
-Process 0; WTime: 66.620179
-Process 1; WTime: 66.620200
-Process 2; WTime: 66.620333
-Process 3; WTime: 66.620205
-Process 4; WTime: 66.620322
-Process 5; WTime: 66.620210
-Process 6; WTime: 66.620189
-Process 7; WTime: 66.620214
-Process 8; WTime: 66.620163
-Process 9; WTime: 66.620313
-Process 14; WTime: 66.620286
-Process 18; WTime: 66.620863
-
-
-MPI EXECUTION with 20 processes
-Process 12; WTime: 64.236423
-Process 16; WTime: 64.236400
-Process 0; WTime: 64.236457
-Process 1; WTime: 64.236584
-Process 2; WTime: 64.236539
-Process 3; WTime: 64.236470
-Process 4; WTime: 64.236546
-Process 6; WTime: 64.236526
-Process 7; WTime: 64.236443
-Process 8; WTime: 64.236554
-Process 9; WTime: 64.236257
-Process 10; WTime: 64.236454
-Process 11; WTime: 64.236529
-Process 13; WTime: 64.236553
-Process 14; WTime: 64.236525
-Process 15; WTime: 64.236449
-Process 17; WTime: 64.236580
-Process 18; WTime: 64.236606
-Process 19; WTime: 64.236570
-Process 5; WTime: 64.237011
+MPI EXECUTION with 32 processes
+Process 10; WTime: 36.912196
+Process 11; WTime: 36.911930
+Process 12; WTime: 36.912079
+Process 18; WTime: 36.911907
+Process 19; WTime: 36.911947
+Process 21; WTime: 36.912083
+Process 22; WTime: 36.911976
+Process 23; WTime: 36.912115
+Process 24; WTime: 36.911798
+Process 25; WTime: 36.911914
+Process 26; WTime: 36.912080
+Process 27; WTime: 36.912114
+Process 28; WTime: 36.911953
+Process 30; WTime: 36.912124
+Process 31; WTime: 36.912084
+Process 0; WTime: 36.911829
+Process 1; WTime: 36.911938
+Process 2; WTime: 36.912079
+Process 3; WTime: 36.911974
+Process 5; WTime: 36.911969
+Process 6; WTime: 36.912087
+Process 7; WTime: 36.912055
+Process 8; WTime: 36.912215
+Process 9; WTime: 36.912091
+Process 13; WTime: 36.912099
+Process 14; WTime: 36.911952
+Process 15; WTime: 36.912138
+Process 16; WTime: 36.911978
+Process 17; WTime: 36.912126
+Process 20; WTime: 36.912181
+Process 29; WTime: 36.912115
+Process 4; WTime: 36.912541
